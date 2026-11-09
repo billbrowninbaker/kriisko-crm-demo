@@ -1,0 +1,912 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Kriisko CRM model</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  /* public page: matches the kriisko.studio home page (app/page.tsx Hero, globals.css) */
+  .kx{background:#050608;min-height:calc(100vh - 30px);font-family:Inter,"Segoe UI",sans-serif}
+  .kxh{position:sticky;top:0;z-index:5;background:rgba(0,0,0,.88);border-bottom:1px solid rgba(255,255,255,.08)}
+  .kxw{max-width:1152px;margin:0 auto;padding:0 20px}
+  .kxbar{display:flex;align-items:center;gap:24px;height:76px}
+  .kxlogo{font-family:"Space Grotesk",sans-serif;font-weight:700;letter-spacing:.3em;color:#fff;text-decoration:none;font-size:17px}
+  .kxlogo b{color:#22d3ee}
+  .kxnav{display:flex;gap:30px;margin:0 auto}
+  .kxh{display:block;padding:0}
+  .kxnav{border:0;padding:0}
+  .kxnav a{display:inline;padding:0;border-radius:0;color:#d4d4d8;text-decoration:none;font-size:15px;white-space:nowrap}
+  .kxlogo{white-space:nowrap}
+  .kxnav a:hover{color:#fff}
+  .kxbtn{background:#22d3ee;color:#000;border-radius:999px;padding:10px 20px;font-weight:600;text-decoration:none;font-size:15px;white-space:nowrap}
+  .kxbtn:hover{background:#67e8f9}
+  .kxhero{position:relative;overflow:hidden;padding:110px 0 90px}
+  .kxgrid{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.035) 1px,transparent 1px);background-size:44px 44px;-webkit-mask-image:radial-gradient(ellipse 80% 60% at 50% 0%,#000 40%,transparent 100%);mask-image:radial-gradient(ellipse 80% 60% at 50% 0%,#000 40%,transparent 100%)}
+  .kxhero .kxw{position:relative}
+  .kxchip{display:inline-flex;align-items:center;gap:8px;border:1px solid rgba(255,255,255,.1);border-radius:999px;padding:5px 15px;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:#d4d4d8}
+  .kxdot{width:6px;height:6px;border-radius:50%;background:#22d3ee;box-shadow:0 0 8px #22d3ee}
+  .kxh1{font-family:"Space Grotesk",sans-serif;font-size:clamp(36px,5.4vw,64px);line-height:1.08;font-weight:700;letter-spacing:-.02em;max-width:900px;margin:28px 0 0;color:#fff}
+  .tg{background:linear-gradient(100deg,#67e8f9 0%,#22d3ee 35%,#a78bfa 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .kxp{font-size:18px;line-height:1.65;color:#a1a1aa;max-width:672px;margin:24px 0 0}
+  .kxbtns{display:flex;gap:16px;flex-wrap:wrap;margin-top:36px}
+  .kxbtns .kxbtn{padding:12px 24px;font-size:14px}
+  .kxbtn2{border:1px solid rgba(255,255,255,.15);color:#e4e4e7;border-radius:999px;padding:12px 24px;font-weight:600;font-size:14px;text-decoration:none}
+  .kxsmall{font-size:14px;color:#71717a;margin-top:16px}
+  .kxcards{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:40px}
+  .kxcard{background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.015));border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:16px 20px}
+  .kxcard b{font-family:"Space Grotesk",sans-serif;font-size:18px;color:#fff;display:block}
+  .kxcard span{font-size:14px;color:#a1a1aa}
+  @media (max-width:900px){.kxnav{display:none}.kxcards{grid-template-columns:1fr}.kxbar{justify-content:space-between}}
+  /* CR Assistant */
+  .queue{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:12px}
+  .prop{background:var(--panel);border:1px solid #155e6b;border-radius:12px;padding:12px 14px}
+  .prop .ag{font-size:12px;color:var(--cyan);text-transform:uppercase;letter-spacing:.08em}
+  .prop textarea{min-height:90px;margin-top:8px}
+  .agtabs{display:flex;gap:6px;flex-wrap:wrap;margin:22px 0 12px}
+  .agtabs button.on{border-color:var(--cyan);color:var(--cyan)}
+  .score{display:inline-block;min-width:44px;text-align:center;border-radius:999px;padding:0 8px;font-weight:700;color:#000}
+  :root{--bg:#07090c;--panel:#10151b;--panel2:#161d25;--line:#26313d;--text:#eef3f7;--cyan:#22d3ee;--ok:#34d399;--warn:#fbbf24;--bad:#f87171;--violet:#a78bfa}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 Inter,"Segoe UI",system-ui,sans-serif}
+  a{color:var(--cyan)}
+  button{font:inherit;cursor:pointer;border-radius:999px;border:1px solid var(--line);background:var(--panel2);color:var(--text);padding:6px 14px}
+  button.p{background:var(--cyan);border-color:var(--cyan);color:#000;font-weight:600}
+  button.s{padding:3px 10px;font-size:13px}
+  button.x{border-color:#5b2a2a;color:var(--bad)}
+  input,select,textarea{font:inherit;background:#0b1015;color:var(--text);border:1px solid var(--line);border-radius:8px;padding:6px 10px}
+  textarea{width:100%;min-height:60px}
+  .demo{background:#3a2c07;color:#fff3c4;text-align:center;font-size:13px;padding:5px 10px}
+  .demo button{margin-left:8px;padding:1px 10px;font-size:12px}
+  header{display:flex;align-items:center;gap:16px;padding:14px 22px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+  .logo{letter-spacing:.25em;font-weight:700;font-family:"Space Grotesk",sans-serif}.logo b{color:var(--cyan)}
+  header .who{margin-left:auto;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .chip{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:1px 10px;font-size:12.5px}
+  .chip.staff{border-color:var(--cyan);color:var(--cyan)} .chip.customer{border-color:var(--ok);color:var(--ok)} .chip.sub{border-color:var(--violet);color:var(--violet)}
+  .layout{display:grid;grid-template-columns:210px 1fr;min-height:calc(100vh - 90px)}
+  nav{border-right:1px solid var(--line);padding:14px 10px}
+  nav a{display:block;padding:8px 12px;border-radius:8px;color:var(--text);text-decoration:none}
+  nav a.on{background:var(--panel2);color:var(--cyan)}
+  main{padding:22px 26px 120px;max-width:1150px}
+  h1{font-size:24px;margin:0 0 4px} h2{font-size:17px;margin:22px 0 8px} h3{font-size:15px;margin:0}
+  .sub{margin:0 0 16px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+  .card h3{margin-bottom:8px}
+  .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:7px 0;border-top:1px solid var(--line)}
+  .row:first-of-type{border-top:0}
+  .grow{flex:1;min-width:180px}
+  .bad{color:var(--bad)} .warn{color:var(--warn)} .ok{color:var(--ok)}
+  table{border-collapse:collapse;width:100%}
+  th,td{text-align:left;padding:7px 8px;border-top:1px solid var(--line);vertical-align:top}
+  th{font-size:13px}
+  .tabs{display:flex;gap:6px;flex-wrap:wrap;margin:14px 0}
+  .tabs button.on{border-color:var(--cyan);color:var(--cyan)}
+  .kanban{display:grid;grid-template-columns:repeat(5,minmax(170px,1fr));gap:10px;overflow-x:auto}
+  .col{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px;min-height:200px}
+  .kcard{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:9px;margin-top:8px}
+  .tl{border-left:2px solid var(--line);padding-left:14px;margin-left:4px}
+  .tl .it{margin:0 0 12px}
+  .tl .meta{font-size:13px}
+  .internal{color:var(--warn);font-size:12px;border:1px solid var(--warn);border-radius:999px;padding:0 7px;margin-left:6px}
+  .ms{display:flex;gap:10px;padding:6px 0}
+  .ms .dot{width:20px;height:20px;border-radius:50%;border:2px solid var(--line);flex:0 0 20px;display:grid;place-items:center;font-size:12px}
+  .ms.done .dot{background:var(--ok);border-color:var(--ok);color:#000}
+  .msg{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:8px 12px;margin:8px 0;max-width:640px}
+  .msg.mine{margin-left:auto;border-color:#155e6b}
+  .form{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:10px}
+  /* public page */
+  .pub{max-width:1000px;margin:0 auto;padding:70px 24px}
+  .pub h1{font-size:54px;line-height:1.05;margin:24px 0}
+  .pub h1 span{color:var(--cyan)}
+  /* chat */
+  .chatbtn{position:fixed;right:22px;bottom:22px;z-index:40;background:var(--cyan);color:#000;font-weight:700;border:0;padding:13px 24px;font-size:16px}
+  .chat{position:fixed;right:22px;bottom:84px;z-index:41;width:min(380px,calc(100vw - 32px));background:var(--panel);border:1px solid var(--cyan);border-radius:14px;display:flex;flex-direction:column;max-height:70vh}
+  .chat .hd{padding:10px 14px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}
+  .chat .bd{padding:10px 14px;overflow-y:auto;flex:1}
+  .chat .b{margin:6px 0;padding:7px 11px;border-radius:12px;background:var(--panel2);white-space:pre-wrap}
+  .chat .b.u{background:#0e3a42;margin-left:40px}
+  .chat .b.a{margin-right:20px}
+  .chat form{display:flex;gap:6px;padding:10px;border-top:1px solid var(--line)}
+  .chat form input{flex:1}
+  .note{font-size:12.5px}
+  /* inbox */
+  .inbox{position:fixed;left:16px;bottom:16px;z-index:45;width:min(400px,calc(100vw - 32px));background:#fff;color:#111;border-radius:12px;box-shadow:0 10px 40px rgba(0,0,0,.6);max-height:70vh;overflow:auto}
+  .inbox .hd{background:#e8eaed;padding:9px 14px;font-weight:600;display:flex;justify-content:space-between;border-radius:12px 12px 0 0}
+  .inbox .hd button{background:#fff;color:#111;border-color:#bbb}
+  .mail{padding:12px 14px;border-top:1px solid #ddd}
+  .mail a{color:#0b57d0;font-weight:600}
+  .modal{position:fixed;inset:0;background:rgba(0,0,0,.7);display:grid;place-items:center;z-index:60}
+  .modal .card{max-width:440px}
+  @media (max-width:760px){.layout{grid-template-columns:1fr}nav{border-right:0;border-bottom:1px solid var(--line);display:flex;flex-wrap:wrap;gap:4px}.pub h1{font-size:36px}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+/* Kriisko CRM working model (Bill, 2026-11-09). One file, sample data, saves in this browser only.
+   Nothing is emailed: the "Demo inbox" stands in for each person's real email. */
+const KEY = 'kriiskoCrmModel.v3', SKEY = 'kriiskoCrmModel.session';
+const STAGES = ['Lead', 'Contacted', 'Proposal', 'Signed', 'Active care'];
+const PERMS = {
+  staff: [['assistant','CR Assistant and its agents'],['customers.all','See all customers'],['pipeline','Pipeline board'],['notes.write','Log calls, notes, promises, check-ins'],['workorders.assign','Assign work to subcontractors'],['money.all','See money: invoices, sub pay'],['admin.people','Manage people and tier levels (admin)'],['log.view','See the activity log']],
+  customer: [['own.project','See their project progress'],['own.messages','Message Kriisko'],['own.requests','Send change requests'],['own.invoices','See their invoices'],['own.documents','See their contract and documents'],['own.chat','Use the AI helper']],
+  sub: [['sub.orders','See their work orders'],['sub.handin','Hand in finished work'],['sub.pay','See their pay'],['sub.customerName','See which customer a job is for'],['sub.message','Message the customer directly']]
+};
+const KIND = {staff:'Kriisko', customer:'Customer', sub:'Subcontractor'};
+
+function day(n){ const d = new Date(); d.setHours(12,0,0,0); d.setDate(d.getDate()+n); return d.toISOString().slice(0,10); }
+const TODAY = day(0);
+function ago(iso){ const n = Math.round((new Date(TODAY) - new Date(iso.slice(0,10)))/864e5); return n===0?'today':n===1?'yesterday':n===-1?'tomorrow':n>0?n+' days ago':'in '+(-n)+' days'; }
+function esc(s){ return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function uid(p){ return p + Math.random().toString(36).slice(2,8); }
+function money(n){ return '$' + Number(n||0).toLocaleString(); }
+
+function seed(){
+  const all = k => PERMS[k].map(p => p[0]);
+  return {
+    tiers: [
+      {id:'t-admin', kind:'staff', name:'Admin', perms: all('staff')},
+      {id:'t-sales', kind:'staff', name:'Sales', perms:['customers.all','pipeline','notes.write']},
+      {id:'t-c1', kind:'customer', name:'Basic', perms:['own.project','own.messages']},
+      {id:'t-c2', kind:'customer', name:'Care', perms:['own.project','own.messages','own.requests','own.invoices','own.chat']},
+      {id:'t-c3', kind:'customer', name:'Corporate', perms: all('customer')},
+      {id:'t-s1', kind:'sub', name:'Task', perms:['sub.orders','sub.handin','sub.pay']},
+      {id:'t-s2', kind:'sub', name:'Trusted', perms: all('sub')}
+    ],
+    orgs: [
+      {id:'o1', name:'Sumpter Valley Bakery', stage:'Active care', tierId:'t-c2', owner:'p-kris', cadence:30, nextCheckin:day(-3), renewal:day(40), project:{name:'Website + online orders', milestones:[{name:'Design approved', done:true, src:'GitHub issue #4 closed'},{name:'Online ordering live', done:true, src:'GitHub PR #9 merged'},{name:'Holiday menu page', done:false, src:'GitHub issue #12 open'}]}},
+      {id:'o2', name:'Anthony Lakes Outfitters', stage:'Proposal', tierId:'t-c1', owner:'p-bill', cadence:14, nextCheckin:day(2), project:{name:'Booking site (proposed)', milestones:[{name:'Proposal sent', done:true, src:'CRM'},{name:'Contract signed', done:false, src:'CRM'}]}},
+      {id:'o3', name:'Main Street Dental', stage:'Signed', tierId:'t-c3', owner:'p-kris', cadence:30, nextCheckin:day(9), project:{name:'AI receptionist', milestones:[{name:'Call scripts approved', done:true, src:'GitHub issue #2 closed'},{name:'Phone line connected', done:false, src:'GitHub issue #5 open'},{name:'Go live', done:false, src:'GitHub issue #6 open'}]}},
+      {id:'o4', name:'Halfway Hay & Feed', stage:'Contacted', tierId:'t-c1', owner:'p-sales', cadence:14, nextCheckin:day(-1), project:{name:'Not started', milestones:[]}},
+      {id:'o5', name:'Elkhorn Auto Glass', stage:'Lead', tierId:'t-c1', owner:'p-sales', cadence:14, nextCheckin:day(5), project:{name:'Not started', milestones:[]}}
+    ],
+    people: [
+      {id:'p-bill', name:'Bill Brown', email:'bill@kriisko.test', kind:'staff', tierId:'t-admin'},
+      {id:'p-kris', name:'Kris', email:'kris@kriisko.test', kind:'staff', tierId:'t-admin'},
+      {id:'p-sales', name:'Sam (sample salesperson)', email:'sam@kriisko.test', kind:'staff', tierId:'t-sales'},
+      {id:'p-robyn', name:'Robyn', email:'robyn@sub.test', kind:'sub', tierId:'t-s1'},
+      {id:'p-vic', name:'Vic (sample sub)', email:'vic@sub.test', kind:'sub', tierId:'t-s2'},
+      {id:'p-c1', name:'Dana', email:'dana@bakery.test', kind:'customer', orgId:'o1'},
+      {id:'p-c2', name:'Lee', email:'lee@outfitters.test', kind:'customer', orgId:'o2'},
+      {id:'p-c3', name:'Dr. Ames', email:'ames@dental.test', kind:'customer', orgId:'o3'},
+      {id:'p-c3b', name:'Pat (office manager)', email:'pat@dental.test', kind:'customer', orgId:'o3'},
+      {id:'p-c4', name:'Gene', email:'gene@hayfeed.test', kind:'customer', orgId:'o4'}
+    ],
+    notes: [
+      {id:'n1', orgId:'o1', by:'p-kris', at:day(-34), type:'Call', text:'Dana is happy with online orders. Wants a holiday menu page before Thanksgiving.', internal:false},
+      {id:'n2', orgId:'o1', by:'p-kris', at:day(-33), type:'Note', text:'Prefers texts over email. Busy before 10 AM, call after lunch.', internal:true},
+      {id:'n3', orgId:'o2', by:'p-bill', at:day(-6), type:'Meeting', text:'Walked Lee through the booking proposal. Questions about winter season pricing.', internal:false},
+      {id:'n4', orgId:'o3', by:'p-kris', at:day(-12), type:'Email', text:'Sent the call scripts; Dr. Ames approved them the same day.', internal:false},
+      {id:'n5', orgId:'o4', by:'p-sales', at:day(-75), type:'Call', text:'First call. Interested in a phone line that takes feed orders. Call back after harvest.', internal:false},
+      {id:'n6', orgId:'o5', by:'p-sales', at:day(-3), type:'Note', text:'Referral from Main Street Dental.', internal:true}
+    ],
+    promises: [
+      {id:'r1', orgId:'o1', text:'Send the holiday menu mockup', due:day(-2), owner:'p-kris', done:false},
+      {id:'r2', orgId:'o2', text:'Answer the winter season questions', due:day(1), owner:'p-bill', done:false},
+      {id:'r3', orgId:'o3', text:'Test call with Pat before go-live', due:day(6), owner:'p-kris', done:false}
+    ],
+    messages: [
+      {id:'m1', orgId:'o1', from:'p-c1', at:day(-4), text:'Could we add gift cards to online orders?'},
+      {id:'m2', orgId:'o3', from:'p-c3b', at:day(-2), text:'Which number do patients call during the test?'},
+      {id:'m3', orgId:'o3', from:'p-kris', at:day(-2), text:'Your main line. I will be on the call with you.'},
+      {id:'m4', orgId:'o3', from:'p-c3', at:day(-1), text:'The test call went to voicemail twice. Is something wrong with the setup?'}
+    ],
+    requests: [
+      {id:'q1', orgId:'o1', by:'p-c1', at:day(-4), text:'Add gift cards to online orders', status:'Open'}
+    ],
+    workorders: [
+      {id:'w1', orgId:'o1', subId:'p-robyn', title:'Holiday menu photos (6)', due:day(3), pay:120, status:'Assigned', handin:''},
+      {id:'w2', orgId:'o3', subId:'p-vic', title:'Record the greeting voice lines', due:day(-1), pay:80, status:'Handed in', handin:'greeting-v1.mp3'}
+    ],
+    invoices: [
+      {id:'i1', orgId:'o1', label:'Monthly care, November', amount:250, status:'Paid'},
+      {id:'i2', orgId:'o3', label:'Milestone 1: call scripts', amount:1500, status:'Due'},
+      {id:'i3', orgId:'o2', label:'Booking site deposit', amount:750, status:'Past due'}
+    ],
+    pending: [], doneKeys: [], issues: [], reports: [],
+    docs: [
+      {id:'d1', orgId:'o3', name:'Service agreement (signed)'},
+      {id:'d2', orgId:'o3', name:'Milestone plan'}
+    ],
+    inbox: [],
+    log: []
+  };
+}
+
+let S; try { S = JSON.parse(localStorage.getItem(KEY)); } catch(e) {}
+if (!S || !S.tiers) S = seed();
+let sess = null; try { sess = JSON.parse(localStorage.getItem(SKEY)); } catch(e) {}
+if (sess && sess.until < Date.now()) sess = null;
+let ui = {page:'', org:null, tab:'Timeline', chatOpen:false, chat:[], chatWait:null, inboxOpen:false, confirmLogin:null, pending:null};
+
+function save(){ try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e) {} }
+function saveSess(remember){ try { if (sess && remember) localStorage.setItem(SKEY, JSON.stringify(sess)); else localStorage.removeItem(SKEY); } catch(e) {} }
+function person(id){ return S.people.find(p => p.id === id); }
+function org(id){ return S.orgs.find(o => o.id === id); }
+function tierOf(p){ if (!p) return null; const tid = p.kind === 'customer' ? (org(p.orgId)||{}).tierId : p.tierId; return S.tiers.find(t => t.id === tid); }
+function realMe(){ return sess ? person(sess.personId) : null; }
+function me(){ return sess && sess.viewAs ? person(sess.viewAs) : realMe(); }
+function can(perm, p){ const t = tierOf(p || me()); return !!t && t.perms.includes(perm); }
+function log(what){ const r = realMe(); S.log.unshift({at:new Date().toISOString(), who: r ? r.name : 'Website chat', what}); S.log = S.log.slice(0,300); }
+function nameOf(id){ const p = person(id); return p ? p.name : '—'; }
+function lastContact(o){ const d = [...S.notes.filter(n=>n.orgId===o.id).map(n=>n.at), ...S.messages.filter(m=>m.orgId===o.id).map(m=>m.at)].sort().pop(); return d || null; }
+function awaitingReply(o){ const t = S.messages.filter(m=>m.orgId===o.id); const l = t[t.length-1]; return l && (person(l.from)||{}).kind === 'customer'; }
+
+/* ---------- relations: what needs attention ---------- */
+function attention(scopeOrgs){
+  const ids = new Set(scopeOrgs.map(o=>o.id));
+  return {
+    overdue: S.promises.filter(r => ids.has(r.orgId) && !r.done && r.due < TODAY),
+    soon: S.promises.filter(r => ids.has(r.orgId) && !r.done && r.due >= TODAY && r.due <= day(3)),
+    checkins: scopeOrgs.filter(o => o.nextCheckin <= TODAY),
+    quiet: scopeOrgs.filter(o => { const l = lastContact(o); return !l || l < day(-60); }),
+    replies: scopeOrgs.filter(awaitingReply),
+    requests: S.requests.filter(q => ids.has(q.orgId) && q.status === 'Open'),
+    handed: S.workorders.filter(w => ids.has(w.orgId) && w.status === 'Handed in')
+  };
+}
+function staffOrgs(){ return can('customers.all') ? S.orgs : []; }
+
+/* ---------- rendering ---------- */
+function render(){
+  const app = document.getElementById('app');
+  const demoBar = `<div class="demo">${me() ? 'Working model: sample data, nothing is emailed, saves in this browser only.' : 'Demo: there is no CRM button on purpose. Click <b>Chat with us</b> and type “take me to the CRM”. Try bill@kriisko.test, robyn@sub.test or pat@dental.test, then open the Demo inbox.'}<button data-act="inbox">Demo inbox (${S.inbox.filter(m=>!m.used).length})</button><button data-act="reset">Reset sample data</button></div>`;
+  let body = me() ? appView() : publicView();
+  app.innerHTML = demoBar + body + chatView() + inboxView() + modalView();
+  const cb = document.querySelector('.chat .bd'); if (cb) cb.scrollTop = cb.scrollHeight;
+  const ci = document.querySelector('.chat input'); if (ci && ui.chatOpen) ci.focus();
+}
+
+// The public page is a copy of the kriisko.studio home page top: no CRM button anywhere.
+function publicView(){
+  const nav = ['Live demos','Services','You own it','Work','FAQ','Private AI','The Lab'];
+  const cards = [['Fixed price, in writing','scoped deliverables, never an hourly meter'],['You own everything',"domain, site, data — the title's in your name, like a car"],['Local & reachable','a Baker City founder, not a call center or ticket queue']];
+  return `<div class="kx"><header class="kxh"><div class="kxw kxbar"><a class="kxlogo" href="#" data-act="nop2">KRIISKO <b>STUDIOS</b></a>
+    <nav class="kxnav">${nav.map(l => `<a href="#" data-act="nop2">${l}</a>`).join('')}</nav>
+    <a class="kxbtn" href="#" data-act="nop2">Book a free call</a></div></header>
+  <section class="kxhero"><div class="kxgrid" aria-hidden="true"></div><div class="kxw">
+    <span class="kxchip"><span class="kxdot"></span> Baker City, Oregon · serving Baker County &amp; Eastern Oregon</span>
+    <h1 class="kxh1">Never miss another call. <span class="tg">Never lose another weekend to paperwork.</span></h1>
+    <p class="kxp">Kriisko Studios builds websites, connects your tools, and sets up AI employees for local businesses — fixed prices, a working demo in the first week, and one local person to call: me, Kris.</p>
+    <div class="kxbtns"><a class="kxbtn" href="#" data-act="nop2">📞 Call the AI receptionist demo</a><a class="kxbtn2" href="#" data-act="nop2">Book a free 20-minute call</a></div>
+    <p class="kxsmall">The demo line is a live AI — it books real appointments on my calendar and passes callers to my cell when they need a human. Try it.</p>
+    <div class="kxcards">${cards.map(c => `<div class="kxcard"><b>${esc(c[0])}</b><span>${esc(c[1])}</span></div>`).join('')}</div>
+  </div></section></div>`;
+}
+
+function navItems(){
+  const p = me(); const k = p.kind; const items = [];
+  if (k === 'staff') {
+    items.push(['today','Today']);
+    if (can('assistant')) items.push(['assistant', `CR Assistant${S.pending.length ? ' (' + S.pending.length + ')' : ''}`]);
+    if (can('customers.all')) items.push(['customers','Customers']);
+    if (can('pipeline')) items.push(['pipeline','Pipeline']);
+    if (can('workorders.assign')) items.push(['work','Work orders']);
+    if (can('admin.people')) items.push(['people','People & tiers']);
+    if (can('log.view')) items.push(['log','Activity log']);
+  } else if (k === 'customer') {
+    if (can('own.project')) items.push(['project','My project']);
+    if (can('own.messages')) items.push(['messages','Messages']);
+    if (can('own.requests')) items.push(['requests','Change requests']);
+    if (can('own.invoices')) items.push(['invoices','Invoices']);
+    if (can('own.documents')) items.push(['docs','Documents']);
+  } else {
+    if (can('sub.orders')) items.push(['suborders','My work orders']);
+    if (can('sub.pay')) items.push(['subpay','My pay']);
+  }
+  return items;
+}
+
+function appView(){
+  const p = me(), r = realMe(), t = tierOf(p);
+  const items = navItems();
+  if (!items.find(i => i[0] === ui.page)) ui.page = items.length ? items[0][0] : '';
+  if (ui.page !== 'customers') ui.org = null;
+  const viewing = sess.viewAs ? `<span class="chip warn">Previewing as ${esc(p.name)}</span><button class="s" data-act="stopview">Back to ${esc(r.name)}</button>` : '';
+  const orgName = p.kind === 'customer' ? ' · ' + esc(org(p.orgId).name) : '';
+  return `<header><div class="logo">KRIISKO <b>STUDIOS</b> · CRM</div>
+    <div class="who">${viewing}<span>${esc(p.name)}${orgName}</span><span class="chip ${p.kind}">${KIND[p.kind]} · ${esc(t ? t.name : 'no tier')}</span><button class="s" data-act="logout">Sign out</button></div></header>
+    <div class="layout"><nav>${items.map(i => `<a href="#" data-act="go" data-v="${i[0]}" class="${ui.page===i[0]?'on':''}">${i[1]}</a>`).join('') || '<p>This tier has no pages turned on.</p>'}</nav>
+    <main>${pageView()}</main></div>`;
+}
+
+function pageView(){
+  switch (ui.page) {
+    case 'today': return todayView();
+    case 'assistant': return assistantView();
+    case 'customers': return ui.org ? orgView(org(ui.org)) : customersView();
+    case 'pipeline': return pipelineView();
+    case 'work': return workView();
+    case 'people': return peopleView();
+    case 'log': return logView();
+    case 'project': return projectView();
+    case 'messages': return messagesView(org(me().orgId), true);
+    case 'requests': return requestsView(org(me().orgId), true);
+    case 'invoices': return invoicesView(org(me().orgId));
+    case 'docs': return docsView(org(me().orgId));
+    case 'suborders': return subOrdersView();
+    case 'subpay': return subPayView();
+  }
+  return '';
+}
+
+function orgLink(o){ return `<a href="#" data-act="openorg" data-v="${o.id}">${esc(o.name)}</a>`; }
+
+function todayView(){
+  const p = me();
+  const orgs = staffOrgs();
+  if (!orgs.length) return `<h1>Today</h1><p>This tier can't see customers.</p>`;
+  const a = attention(orgs);
+  const box = (title, cls, items) => `<div class="card"><h3 class="${cls}">${title} (${items.length})</h3>${items.length ? items.join('') : '<div class="row">Nothing here.</div>'}</div>`;
+  return `<h1>Today, ${new Date(TODAY+'T12:00').toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'})}</h1>
+  <p class="sub">Customer relations first: who needs us, what we promised, who we haven't talked to.</p>
+  ${can('assistant') ? `<p><a href="#" data-act="go" data-v="assistant">The CR Assistant has drafts ready →</a></p>` : ''}
+  <div class="grid">
+   ${box('Promises overdue','bad', a.overdue.map(r => `<div class="row"><span class="grow">${esc(r.text)} · ${orgLink(org(r.orgId))}<br><span class="bad">due ${ago(r.due)}</span> · ${esc(nameOf(r.owner))}</span><button class="s" data-act="promdone" data-v="${r.id}">Done</button></div>`))}
+   ${box('Customers waiting on a reply','bad', a.replies.map(o => `<div class="row"><span class="grow">${orgLink(o)}</span><button class="s" data-act="openorg" data-v="${o.id}" data-tab="Messages">Reply</button></div>`))}
+   ${box('Check-ins due','warn', a.checkins.map(o => `<div class="row"><span class="grow">${orgLink(o)} · due ${ago(o.nextCheckin)}</span><button class="s" data-act="openorg" data-v="${o.id}" data-tab="Check-ins">Check in</button></div>`))}
+   ${box('Gone quiet (60+ days)','warn', a.quiet.map(o => `<div class="row"><span class="grow">${orgLink(o)} · last contact ${lastContact(o) ? ago(lastContact(o)) : 'never'}</span></div>`))}
+   ${box('Promises due in 3 days','', a.soon.map(r => `<div class="row"><span class="grow">${esc(r.text)} · ${orgLink(org(r.orgId))} · due ${ago(r.due)}</span></div>`))}
+   ${box('Open change requests','', a.requests.map(q => `<div class="row"><span class="grow">${esc(q.text)} · ${orgLink(org(q.orgId))}</span></div>`))}
+   ${can('workorders.assign') ? box('Sub work handed in, needs review','', a.handed.map(w => `<div class="row"><span class="grow">${esc(w.title)} · ${esc(nameOf(w.subId))} · ${orgLink(org(w.orgId))}</span><button class="s" data-act="woapprove" data-v="${w.id}">Approve</button></div>`)) : ''}
+  </div>`;
+}
+
+function health(o){
+  const a = attention([o]);
+  if (a.overdue.length || a.replies.length) return '<span class="bad">Needs attention</span>';
+  if (a.checkins.length || a.quiet.length) return '<span class="warn">Check in</span>';
+  return '<span class="ok">Good</span>';
+}
+
+function customersView(){
+  return `<h1>Customers</h1><p class="sub">Every customer, their tier, and how the relationship is doing.</p>
+  <table><tr><th>Customer</th><th>Stage</th><th>Tier</th><th>Relationship</th><th>Last contact</th><th>Next check-in</th><th>Owner</th></tr>
+  ${S.orgs.map(o => `<tr><td>${orgLink(o)}</td><td>${o.stage}</td><td>${esc((S.tiers.find(t=>t.id===o.tierId)||{}).name)}</td><td>${health(o)}</td><td>${lastContact(o) ? ago(lastContact(o)) : 'never'}</td><td>${ago(o.nextCheckin)}</td><td>${esc(nameOf(o.owner))}</td></tr>`).join('')}
+  </table>
+  ${can('admin.people') ? `<div class="form"><input id="neworg" placeholder="New customer name"><button class="p" data-act="addorg">Add customer</button></div>` : ''}`;
+}
+
+function orgView(o){
+  const tabs = ['Timeline','Promises','Check-ins','Messages','Requests','Contacts','Work'].concat(can('money.all') ? ['Invoices'] : []);
+  if (!tabs.includes(ui.tab)) ui.tab = 'Timeline';
+  const tierSel = can('admin.people')
+    ? `<select data-act="orgtier" data-v="${o.id}">${S.tiers.filter(t=>t.kind==='customer').map(t => `<option value="${t.id}" ${t.id===o.tierId?'selected':''}>${esc(t.name)}</option>`).join('')}</select>`
+    : esc((S.tiers.find(t=>t.id===o.tierId)||{}).name);
+  let inner = '';
+  if (ui.tab === 'Timeline') inner = timelineView(o);
+  if (ui.tab === 'Promises') inner = promisesView(o);
+  if (ui.tab === 'Check-ins') inner = checkinView(o);
+  if (ui.tab === 'Messages') inner = messagesView(o, false);
+  if (ui.tab === 'Requests') inner = requestsView(o, false);
+  if (ui.tab === 'Contacts') inner = contactsView(o);
+  if (ui.tab === 'Work') inner = workView(o);
+  if (ui.tab === 'Invoices') inner = invoicesView(o);
+  return `<a href="#" data-act="go" data-v="customers">← All customers</a>
+  <h1>${esc(o.name)}</h1>
+  <p class="sub">Stage: <b>${o.stage}</b> · Tier: ${tierSel} · Relationship: ${health(o)} · Owner: ${esc(nameOf(o.owner))}</p>
+  <div class="tabs">${tabs.map(t => `<button class="${ui.tab===t?'on':''}" data-act="tab" data-v="${t}">${t}</button>`).join('')}</div>${inner}`;
+}
+
+function timelineView(o){
+  const items = [...S.notes.filter(n=>n.orgId===o.id).map(n => ({at:n.at, html:`<b>${n.type}</b> by ${esc(nameOf(n.by))}${n.internal?'<span class="internal">internal</span>':''}<br>${esc(n.text)}`})),
+                 ...S.messages.filter(m=>m.orgId===o.id).map(m => ({at:m.at, html:`<b>Message</b> from ${esc(nameOf(m.from))}<br>${esc(m.text)}`}))]
+                .sort((a,b) => b.at.localeCompare(a.at));
+  return `${can('notes.write') ? `<div class="card"><h3>Log a contact</h3><div class="form">
+     <select id="ntype"><option>Call</option><option>Text</option><option>Email</option><option>Meeting</option><option>Note</option></select>
+     <label><input type="checkbox" id="nint"> Internal (customer never sees it)</label></div>
+     <textarea id="ntext" placeholder="What was said, what they want, how they like to be contacted"></textarea>
+     <div class="form"><button class="p" data-act="addnote" data-v="${o.id}">Save</button></div></div>` : ''}
+   <h2>Everything with ${esc(o.name)}</h2>
+   <div class="tl">${items.map(i => `<div class="it"><div class="meta">${ago(i.at)} · ${i.at.slice(0,10)}</div>${i.html}</div>`).join('') || 'Nothing yet.'}</div>`;
+}
+
+function promisesView(o){
+  const list = S.promises.filter(r=>r.orgId===o.id).sort((a,b)=>a.due.localeCompare(b.due));
+  return `<p>Anything we tell a customer we'll do becomes a promise with a date, so it can't be forgotten.</p>
+  ${list.map(r => `<div class="row"><span class="grow ${r.done?'ok':r.due<TODAY?'bad':''}">${r.done?'✓ ':''}${esc(r.text)} · due ${ago(r.due)} · ${esc(nameOf(r.owner))}</span>${r.done?'':`<button class="s" data-act="promdone" data-v="${r.id}">Done</button>`}</div>`).join('') || '<p>No promises yet.</p>'}
+  ${can('notes.write') ? `<div class="form"><input id="ptext" class="grow" placeholder="We promised to…"><input id="pdue" type="date" value="${day(3)}">
+   <select id="powner">${S.people.filter(p=>p.kind==='staff').map(p=>`<option value="${p.id}" ${p.id===realMe().id?'selected':''}>${esc(p.name)}</option>`).join('')}</select>
+   <button class="p" data-act="addprom" data-v="${o.id}">Add promise</button></div>` : ''}`;
+}
+
+function draftCheckin(o){
+  const c = S.people.find(p => p.orgId === o.id);
+  const first = c ? c.name.split(' ')[0] : 'there';
+  const open = S.requests.find(q => q.orgId===o.id && q.status==='Open');
+  const next = (o.project.milestones.find(m=>!m.done)||{}).name;
+  return `Hi ${first}, it's ${realMe().name.split(' ')[0]} at Kriisko. Checking in: how is ${o.project.name.toLowerCase().startsWith('not') ? 'everything' : 'the ' + o.project.name.toLowerCase()} working for you?` +
+    (open ? ` I haven't forgotten your request ("${open.text}").` : '') +
+    (next ? ` Next up on our side: ${next.toLowerCase()}.` : '') + ` Anything you need from us?`;
+}
+
+function checkinView(o){
+  return `<div class="card"><h3>Check-in every ${o.cadence} days · next one ${ago(o.nextCheckin)} (${o.nextCheckin})</h3>
+   ${can('notes.write') ? `<div class="form">Every <select data-act="cadence" data-v="${o.id}">${[7,14,30,60,90].map(n=>`<option ${n===o.cadence?'selected':''}>${n}</option>`).join('')}</select> days</div>
+   <h2>AI draft (edit, then send)</h2><textarea id="cktext">${esc(draftCheckin(o))}</textarea>
+   <div class="form"><button class="p" data-act="checkin" data-v="${o.id}">Send as message and log it</button><button data-act="checkincall" data-v="${o.id}">I called instead, log it</button></div>
+   <p class="note">The AI writes the draft; a person reads it and presses send. Nothing goes to a customer on its own.</p>` : ''}</div>`;
+}
+
+function messagesView(o, asCustomer){
+  const list = S.messages.filter(m=>m.orgId===o.id);
+  const mine = me().id;
+  return `${asCustomer ? `<h1>Messages</h1><p class="sub">Write to Kriisko any time. You'll get a reply from a person.</p>` : ''}
+  ${list.map(m => `<div class="msg ${m.from===mine||(!asCustomer&&person(m.from)?.kind!=='customer')?'mine':''}"><b>${esc(nameOf(m.from))}</b> · ${ago(m.at)}<br>${esc(m.text)}</div>`).join('') || '<p>No messages yet.</p>'}
+  ${asCustomer || can('notes.write') ? `<textarea id="mtext" placeholder="Write a message"></textarea><div class="form"><button class="p" data-act="sendmsg" data-v="${o.id}">Send</button></div>` : ''}`;
+}
+
+function requestsView(o, asCustomer){
+  const list = S.requests.filter(q=>q.orgId===o.id);
+  return `${asCustomer ? `<h1>Change requests</h1><p class="sub">Ask for a change or something new. Kris reviews each one and tells you what it involves before any work starts.</p>` : ''}
+  ${list.map(q => `<div class="row"><span class="grow">${esc(q.text)} · ${esc(nameOf(q.by))} · ${ago(q.at)}</span><span class="${q.status==='Open'?'warn':'ok'}">${q.status}</span>
+    ${!asCustomer && can('notes.write') && q.status==='Open' ? `<button class="s" data-act="reqstatus" data-v="${q.id}" data-s="Scheduled">Schedule</button><button class="s" data-act="reqstatus" data-v="${q.id}" data-s="Declined">Decline</button>` : ''}</div>`).join('') || '<p>No requests.</p>'}
+  ${asCustomer ? `<textarea id="rtext" placeholder="What would you like changed or added?"></textarea><div class="form"><button class="p" data-act="addreq" data-v="${o.id}">Send request</button></div>` : ''}`;
+}
+
+function contactsView(o){
+  const list = S.people.filter(p=>p.orgId===o.id);
+  return `<p>Everyone at ${esc(o.name)} who can sign in. They all get the customer's tier.</p>
+  ${list.map(p => `<div class="row"><span class="grow">${esc(p.name)} · ${esc(p.email)}</span>${can('admin.people')?`<button class="s" data-act="viewas" data-v="${p.id}">Preview as</button>`:''}</div>`).join('') || '<p>No contacts yet.</p>'}
+  ${can('admin.people') ? `<div class="form"><input id="cname" placeholder="Name"><input id="cemail" placeholder="Email"><button class="p" data-act="addcontact" data-v="${o.id}">Add contact</button></div>` : ''}`;
+}
+
+function workView(o){
+  const list = S.workorders.filter(w => !o || w.orgId === o.id);
+  const subs = S.people.filter(p=>p.kind==='sub');
+  return `${o ? '' : `<h1>Work orders</h1><p class="sub">Pieces of a customer's job handed to a subcontractor. They see only their own orders.</p>`}
+  <table><tr><th>Job</th>${o?'':'<th>Customer</th>'}<th>Subcontractor</th><th>Due</th>${can('money.all')?'<th>Pay</th>':''}<th>Status</th><th></th></tr>
+  ${list.map(w => `<tr><td>${esc(w.title)}${w.handin?`<br><span class="note">handed in: ${esc(w.handin)}</span>`:''}</td>${o?'':`<td>${orgLink(org(w.orgId))}</td>`}<td>${esc(nameOf(w.subId))}</td><td>${ago(w.due)}</td>${can('money.all')?`<td>${money(w.pay)}</td>`:''}<td>${w.status}</td>
+    <td>${can('workorders.assign') && w.status==='Handed in' ? `<button class="s" data-act="woapprove" data-v="${w.id}">Approve</button>` : ''}${can('money.all') && w.status==='Approved' ? `<button class="s" data-act="wopaid" data-v="${w.id}">Mark paid</button>` : ''}</td></tr>`).join('')}
+  </table>
+  ${can('workorders.assign') ? `<div class="form">${o ? `<input type="hidden" id="worg" value="${o.id}">` : `<select id="worg">${S.orgs.map(x=>`<option value="${x.id}">${esc(x.name)}</option>`).join('')}</select>`}
+    <input id="wtitle" placeholder="Job" class="grow"><select id="wsub">${subs.map(p=>`<option value="${p.id}">${esc(p.name)}</option>`).join('')}</select>
+    <input id="wdue" type="date" value="${day(7)}"><input id="wpay" type="number" placeholder="Pay $" style="width:100px"><button class="p" data-act="addwo">Assign</button></div>` : ''}`;
+}
+
+function invoicesView(o){
+  const list = S.invoices.filter(i=>i.orgId===o.id);
+  return `${me().kind==='customer' ? '<h1>Invoices</h1>' : ''}
+  ${list.map(i => `<div class="row"><span class="grow">${esc(i.label)}</span><b>${money(i.amount)}</b><span class="${i.status==='Paid'?'ok':'warn'}">${i.status}</span></div>`).join('') || '<p>No invoices.</p>'}
+  <p class="note">Sample amounts for the model only.</p>`;
+}
+
+function docsView(o){
+  return `<h1>Documents</h1>${S.docs.filter(d=>d.orgId===o.id).map(d => `<div class="row"><span class="grow">${esc(d.name)}</span><button class="s" data-act="nop">Open</button></div>`).join('') || '<p>No documents.</p>'}`;
+}
+
+function projectView(){
+  const o = org(me().orgId);
+  const c = person(o.owner);
+  return `<h1>${esc(o.project.name)}</h1><p class="sub">Your Kriisko contact: <b>${esc(c ? c.name : 'Kris')}</b>. Progress updates here by itself as the work is finished.</p>
+  <div class="card">${o.project.milestones.map(m => `<div class="ms ${m.done?'done':''}"><div class="dot">${m.done?'✓':''}</div><div><b>${esc(m.name)}</b><br><span class="note">${esc(m.src)}</span></div></div>`).join('') || 'Not started yet.'}</div>
+  <p class="note">In the real system each step is tied to a GitHub issue or PR, so when Kris finishes the work, this page updates on its own.</p>`;
+}
+
+function subOrdersView(){
+  const p = me();
+  const list = S.workorders.filter(w => w.subId === p.id);
+  return `<h1>My work orders</h1><p class="sub">Only the jobs assigned to you.</p>
+  ${list.map(w => `<div class="card" style="margin-bottom:12px"><h3>${esc(w.title)}</h3>
+    <div>For: ${can('sub.customerName') ? esc(org(w.orgId).name) : 'a Kriisko customer'} · due ${ago(w.due)} (${w.due}) · <b>${w.status}</b></div>
+    ${w.handin ? `<div class="note">Handed in: ${esc(w.handin)}</div>` : ''}
+    ${can('sub.handin') && w.status === 'Assigned' ? `<div class="form"><input id="hi-${w.id}" placeholder="File name or link"><button class="p" data-act="handin" data-v="${w.id}">Hand in</button></div>` : ''}
+    ${can('sub.message') ? `<div class="form"><input id="sm-${w.id}" class="grow" placeholder="Message the customer"><button data-act="submsg" data-v="${w.id}">Send</button></div>` : ''}
+  </div>`).join('') || '<p>No work orders right now.</p>'}`;
+}
+
+function subPayView(){
+  const list = S.workorders.filter(w => w.subId === me().id);
+  const owed = list.filter(w => w.status === 'Approved').reduce((a,w)=>a+Number(w.pay||0),0);
+  return `<h1>My pay</h1><p class="sub">Owed to you now (approved, not yet paid): <b>${money(owed)}</b></p>
+  <table><tr><th>Job</th><th>Pay</th><th>Status</th></tr>${list.map(w => `<tr><td>${esc(w.title)}</td><td>${money(w.pay)}</td><td>${w.status}</td></tr>`).join('')}</table>`;
+}
+
+function pipelineView(){
+  return `<h1>Pipeline</h1><p class="sub">Sales stages. Moving a customer is logged.</p>
+  <div class="kanban">${STAGES.map(st => `<div class="col"><b>${st}</b>${S.orgs.filter(o=>o.stage===st).map(o => `<div class="kcard">${orgLink(o)}<div class="note">${health(o)} · ${esc(nameOf(o.owner))}</div>
+    <div class="form">${STAGES.indexOf(st)>0?`<button class="s" data-act="move" data-v="${o.id}" data-d="-1">←</button>`:''}${STAGES.indexOf(st)<STAGES.length-1?`<button class="s" data-act="move" data-v="${o.id}" data-d="1">→</button>`:''}</div></div>`).join('')}</div>`).join('')}</div>`;
+}
+
+function peopleView(){
+  const tierOpts = (kind, sel) => S.tiers.filter(t=>t.kind===kind).map(t => `<option value="${t.id}" ${t.id===sel?'selected':''}>${esc(t.name)}</option>`).join('');
+  const peopleRows = S.people.map(p => `<tr><td>${esc(p.name)}</td><td>${esc(p.email)}</td><td><span class="chip ${p.kind}">${KIND[p.kind]}</span></td>
+    <td>${p.kind==='customer' ? `${esc(org(p.orgId).name)} → ${esc(tierOf(p).name)}` : `<select data-act="ptier" data-v="${p.id}" ${p.id===realMe().id?'disabled title="Another admin changes your tier"':''}>${tierOpts(p.kind, p.tierId)}</select>`}</td>
+    <td>${p.id===realMe().id ? 'you' : `<button class="s" data-act="viewas" data-v="${p.id}">Preview as</button> <button class="s x" data-act="delperson" data-v="${p.id}">Remove</button>`}</td></tr>`).join('');
+  const tierBlock = kind => `<h2>${KIND[kind]} tiers</h2><table><tr><th>Tier</th>${PERMS[kind].map(p=>`<th>${p[1]}</th>`).join('')}<th></th></tr>
+    ${S.tiers.filter(t=>t.kind===kind).map(t => `<tr><td><input value="${esc(t.name)}" data-act="tname" data-v="${t.id}"></td>${PERMS[kind].map(p => `<td><input type="checkbox" data-act="tperm" data-v="${t.id}" data-p="${p[0]}" ${t.perms.includes(p[0])?'checked':''} ${t.id==='t-admin'&&p[0]==='admin.people'?'disabled':''}></td>`).join('')}
+    <td>${tierUsed(t) ? '' : `<button class="s x" data-act="deltier" data-v="${t.id}">Delete</button>`}</td></tr>`).join('')}</table>
+    <div class="form"><input id="nt-${kind}" placeholder="New ${KIND[kind].toLowerCase()} tier name"><button data-act="addtier" data-v="${kind}">Add tier</button></div>`;
+  return `<h1>People &amp; tiers</h1><p class="sub">Admin sets every person's tier. A customer company has one tier that covers all its people. Checkboxes decide what each tier can see and do.</p>
+  <table><tr><th>Name</th><th>Email (sign-in link goes here)</th><th>Type</th><th>Tier</th><th></th></tr>${peopleRows}</table>
+  <div class="form"><input id="npname" placeholder="Name"><input id="npemail" placeholder="Email">
+   <select id="npkind"><option value="staff">Kriisko</option><option value="sub">Subcontractor</option>${S.orgs.map(o=>`<option value="org:${o.id}">Customer at ${esc(o.name)}</option>`).join('')}</select>
+   <button class="p" data-act="addperson">Add person</button></div>
+  ${tierBlock('staff')}${tierBlock('customer')}${tierBlock('sub')}`;
+}
+function tierUsed(t){ return S.people.some(p=>p.tierId===t.id) || S.orgs.some(o=>o.tierId===t.id); }
+
+function logView(){
+  return `<h1>Activity log</h1><p class="sub">Every change: who, what, when.</p>
+  <table><tr><th>When</th><th>Who</th><th>What</th></tr>${S.log.map(l => `<tr><td>${new Date(l.at).toLocaleString()}</td><td>${esc(l.who)}</td><td>${esc(l.what)}</td></tr>`).join('') || '<tr><td colspan="3">Nothing yet.</td></tr>'}</table>`;
+}
+
+/* ---------- CR Assistant: agents propose, a person approves ---------- */
+const AGENTS = [
+  ['briefing','Morning briefing','Weekdays 7:30 AM'],
+  ['notes','Note-taker','After a call or meeting'],
+  ['inbox','Inbox reader','When a customer writes'],
+  ['checkins','Check-in drafter','When a check-in comes due'],
+  ['promises','Promise keeper','Daily'],
+  ['health','Health watch','Weekly'],
+  ['requests','Change-request triage','When a request comes in'],
+  ['subs','Subcontractor coordinator','Daily'],
+  ['reviews','Review & referral','After a milestone on a healthy account'],
+  ['report','Friday report','Friday before noon']
+];
+const agentName = id => (AGENTS.find(a => a[0] === id) || [,'Assistant'])[1];
+const APPROVE = {message:'Send', note:'File it', promise:'Add promise', stage:'Move it', request:'Log request', issue:'Send to Kris', remind:'Send reminder', nudge:'Send nudge', review:'Approve work', report:'Send report'};
+
+function propose(agent, key, p){
+  const k = agent + ':' + key;
+  if (S.pending.some(x => x.key === k) || S.doneKeys.includes(k)) return;
+  S.pending.push({id:uid('a'), key:k, agent, ...p});
+}
+function firstName(o){ const c = S.people.find(p => p.orgId === o.id); return !c ? 'there' : c.name.startsWith('Dr.') ? c.name : c.name.split(' ')[0]; }
+function myFirst(){ return realMe().name.split(' ')[0]; }
+function weekday(iso){ return new Date(iso + 'T12:00').toLocaleDateString(undefined, {weekday:'long'}); }
+function nextWorkday(n){ let d = n; while ([0,6].includes(new Date(day(d) + 'T12:00').getDay())) d++; return day(d); }
+
+function healthScore(o){
+  let s = 100; const why = [];
+  const a = attention([o]);
+  if (a.overdue.length) { s -= 25 * a.overdue.length; why.push(a.overdue.length + ' overdue promise' + (a.overdue.length > 1 ? 's' : '')); }
+  if (a.replies.length) { s -= 20; why.push('waiting on our reply'); }
+  const old = S.requests.filter(q => q.orgId === o.id && q.status === 'Open' && q.at < day(-7));
+  if (old.length) { s -= 10 * old.length; why.push('request open 7+ days'); }
+  const lc = lastContact(o), quiet = lc ? Math.round((new Date(TODAY) - new Date(lc)) / 864e5) : 999;
+  if (quiet > 30) { s -= Math.min(40, quiet - 30); why.push(quiet >= 999 ? 'never contacted' : quiet + ' days since contact'); }
+  if (S.invoices.some(i => i.orgId === o.id && i.status === 'Past due')) { s -= 25; why.push('invoice past due'); }
+  return {score: Math.max(0, s), why};
+}
+function scoreChip(n){ return `<span class="score" style="background:${n >= 80 ? 'var(--ok)' : n >= 60 ? 'var(--warn)' : 'var(--bad)'}">${n}</span>`; }
+
+function classify(t){
+  const l = t.toLowerCase();
+  if (/not working|broken|wrong|problem|voicemail|unhappy|frustrat|down\b|error|didn.t work/.test(l)) return 'complaint';
+  if (/could we|can we|can you|add |change|would like|new page/.test(l)) return 'change request';
+  if (/thank/.test(l)) return 'thanks';
+  return 'question';
+}
+
+const RUN = {
+  inbox(){
+    S.orgs.filter(awaitingReply).forEach(o => {
+      const t = S.messages.filter(m => m.orgId === o.id), m = t[t.length - 1], kind = classify(m.text), f = firstName(o);
+      const when = weekday(nextWorkday(1));
+      const text = kind === 'complaint' ? `Hi ${f}, I'm sorry about that. I'm looking into it right now with Kris and I'll call you ${when} with what we found. — ${myFirst()}`
+        : kind === 'change request' ? `Thanks ${f}, good idea. I've passed it to Kris. He'll tell you what it involves before any work starts. — ${myFirst()}`
+        : kind === 'thanks' ? `You're welcome, ${f}. Glad it's working for you. — ${myFirst()}`
+        : `Hi ${f}, good question. I'll find out and get back to you today. — ${myFirst()}`;
+      propose('inbox', m.id, {kind:'message', orgId:o.id, title:`Reply to ${o.name} (${kind})`, quote:m.text, text});
+      if (kind === 'complaint') propose('inbox', m.id + ':call', {kind:'promise', orgId:o.id, title:`Promise: call ${f} ${when}`, text:`Call ${f} about: ${m.text}`, due:nextWorkday(1), owner:realMe().id});
+      if (kind === 'change request' && !S.requests.some(q => q.orgId === o.id && q.status === 'Open')) propose('inbox', m.id + ':req', {kind:'request', orgId:o.id, title:'Log it as a change request', text:m.text, by:m.from});
+    });
+  },
+  checkins(){
+    S.orgs.filter(o => o.nextCheckin <= TODAY).forEach(o => propose('checkins', o.id + ':' + o.nextCheckin, {kind:'message', orgId:o.id, title:`Check-in with ${o.name} (due ${ago(o.nextCheckin)})`, text:draftCheckin(o), checkin:true}));
+  },
+  promises(){
+    S.promises.filter(r => !r.done).forEach(r => {
+      const o = org(r.orgId);
+      if (r.due < TODAY) propose('promises', r.id + ':' + r.due, {kind:'message', orgId:o.id, title:`Heads-up to ${o.name}: a promise slipped`, quote:r.text, text:`Hi ${firstName(o)}, a quick heads-up: "${r.text.toLowerCase()}" is running behind. New date: ${weekday(nextWorkday(3))}. Sorry for the wait. — ${myFirst()}`, extend:r.id});
+      else if (r.due <= day(1)) propose('promises', r.id + ':soon', {kind:'remind', orgId:o.id, title:`Remind ${nameOf(r.owner)}: due ${ago(r.due)}`, text:`Reminder: "${r.text}" for ${o.name} is due ${ago(r.due)}.`, to:r.owner});
+    });
+  },
+  health(){
+    S.orgs.forEach(o => { const h = healthScore(o); if (h.score < 60) propose('health', o.id + ':' + TODAY, {kind:'promise', orgId:o.id, title:`At risk (${h.score}): call ${o.name} this week`, text:`Call ${firstName(o)} at ${o.name}: ${h.why.join(', ')}`, due:nextWorkday(2), owner:realMe().id}); });
+  },
+  requests(){
+    S.requests.filter(q => q.status === 'Open').forEach(q => {
+      const o = org(q.orgId), signed = S.docs.some(d => d.orgId === o.id && /agreement/i.test(d.name));
+      const scope = signed ? 'Contract on file: check whether this is inside the agreed scope.' : 'No contract on file, so this would be new work for Kris to price.';
+      propose('requests', q.id, {kind:'issue', orgId:o.id, title:`GitHub issue for Kris: ${q.text}`, text:`[${o.name}] ${q.text}\n\nAsked by ${nameOf(q.by)} on ${q.at}. Customer tier: ${(S.tiers.find(t => t.id === o.tierId) || {}).name}.\n${scope}`, req:q.id});
+      propose('requests', q.id + ':reply', {kind:'message', orgId:o.id, title:`Tell ${o.name} we have their request`, text:`Thanks ${firstName(o)}. Kris has your request ("${q.text}"). He'll tell you what it involves before any work starts. — ${myFirst()}`});
+    });
+  },
+  subs(){
+    S.workorders.forEach(w => {
+      const o = org(w.orgId), s = person(w.subId);
+      if (w.status === 'Assigned' && w.due <= day(2)) propose('subs', w.id + ':' + w.due, {kind:'nudge', orgId:o.id, title:`Nudge ${s.name}: "${w.title}" due ${ago(w.due)}`, text:`Hi ${s.name.split(' ')[0]}, a reminder that "${w.title}" is due ${ago(w.due)}. Anything you need from us? — ${myFirst()}`, to:s.id});
+      if (w.status === 'Handed in') propose('subs', w.id + ':review', {kind:'review', orgId:o.id, title:`Review ${s.name}'s hand-in: ${w.title}`, text:`Handed in: ${w.handin}. Check it against the work order before it reaches ${o.name}.`, wo:w.id});
+    });
+  },
+  reviews(){
+    S.orgs.forEach(o => {
+      const done = o.project.milestones.filter(m => m.done);
+      if (done.length && ['Signed','Active care'].includes(o.stage) && !awaitingReply(o) && healthScore(o).score >= 80)
+        propose('reviews', o.id + ':' + done.length, {kind:'message', orgId:o.id, title:`Ask ${o.name} for a review or referral`, text:`Hi ${firstName(o)}, glad "${done[done.length - 1].name.toLowerCase()}" went well. If you're happy with our work, would you leave us a Google review? And if you know another business that could use us, we'd be grateful for the introduction. — ${myFirst()}`});
+    });
+  },
+  report(){ propose('report', TODAY, {kind:'report', title:'Send the Friday report to Bill and Kris', text:reportText()}); }
+};
+function runAll(){ Object.values(RUN).forEach(f => f()); }
+
+function reportStats(){
+  let waits = [];
+  S.orgs.forEach(o => { const t = S.messages.filter(m => m.orgId === o.id);
+    t.forEach((m, i) => { if ((person(m.from) || {}).kind !== 'customer') return; const r = t.slice(i + 1).find(x => (person(x.from) || {}).kind === 'staff'); if (r) waits.push((new Date(r.at) - new Date(m.at)) / 864e5); }); });
+  const due = S.promises.filter(r => r.due < TODAY || r.done), kept = due.filter(r => r.done).length;
+  return {
+    reply: !waits.length ? 'no replies yet' : (waits.reduce((a, b) => a + b, 0) / waits.length) < 0.5 ? 'same day' : (waits.reduce((a, b) => a + b, 0) / waits.length).toFixed(1) + ' days',
+    kept: due.length ? Math.round(100 * kept / due.length) + '% (' + kept + ' of ' + due.length + ')' : 'none due yet',
+    renewals: S.orgs.filter(o => o.renewal && o.renewal <= day(60)).map(o => o.name + ' (' + ago(o.renewal) + ')'),
+    referrals: S.notes.filter(n => /referral/i.test(n.text)).length,
+    risk: S.orgs.map(o => [o, healthScore(o)]).filter(x => x[1].score < 60).map(x => x[0].name + ' ' + x[1].score)
+  };
+}
+function reportText(){ const r = reportStats();
+  return `Kriisko customer relations, week ending ${TODAY}\n- Average time to answer a customer: ${r.reply}\n- Promises kept on time: ${r.kept}\n- Renewals in the next 60 days: ${r.renewals.join(', ') || 'none'}\n- Referrals logged: ${r.referrals}\n- At risk: ${r.risk.join(', ') || 'none'}`; }
+
+function parseNote(text, orgId){
+  const low = text.toLowerCase();
+  let o = orgId ? org(orgId) : S.orgs.find(x => low.includes(x.name.toLowerCase()) || low.includes(x.name.toLowerCase().split(' ')[0]));
+  if (!o) { const c = S.people.find(p => p.kind === 'customer' && low.includes(p.name.split(' ')[0].toLowerCase())); if (c) o = org(c.orgId); }
+  if (!o) return 'I could not tell which customer this is about. Pick one from the list.';
+  const key = uid('n');
+  propose('notes', key, {kind:'note', orgId:o.id, title:`File this on ${o.name}`, text});
+  let due = null;
+  if (/today/.test(low)) due = day(0); else if (/tomorrow/.test(low)) due = day(1); else if (/next week/.test(low)) due = day(7);
+  const dn = ['sunday','monday','tuesday','wednesday','thursday','friday','saturday'];
+  dn.forEach((d, i) => { if (!due && low.includes(d)) { let n = (i - new Date(TODAY + 'T12:00').getDay() + 7) % 7; due = day(n || 7); } });
+  const m = low.match(/in (\d+) days?/); if (!due && m) due = day(+m[1]);
+  if (/wants|needs|asked|quote|send|call (him |her |them )?back|follow up|get back|by /.test(low)) {
+    const what = /quote/.test(low) ? 'Send a quote' : /call (him |her |them )?back/.test(low) ? 'Call back' : 'Follow up';
+    propose('notes', key + ':p', {kind:'promise', orgId:o.id, title:`Promise for ${nameOf(o.owner)}, due ${due ? ago(due) : 'in 3 days'}`, text:`${what}: ${text}`, due:due || nextWorkday(3), owner:o.owner});
+  }
+  const i = STAGES.indexOf(o.stage);
+  let st = null;
+  if (/signed|ready to sign|go ahead/.test(low)) st = 'Signed'; else if (/quote|proposal/.test(low) && i < 2) st = 'Proposal'; else if (/interested/.test(low) && i < 1) st = 'Contacted';
+  if (st && st !== o.stage) propose('notes', key + ':s', {kind:'stage', orgId:o.id, title:`Move ${o.name} from ${o.stage} to ${st}`, text:'', stage:st});
+  return '';
+}
+
+function approve(id, text){
+  const p = S.pending.find(x => x.id === id); if (!p) return;
+  const o = p.orgId ? org(p.orgId) : null, by = realMe().id;
+  if (p.kind === 'message') {
+    S.messages.push({id:uid('m'), orgId:o.id, from:by, at:TODAY, text});
+    if (p.checkin) o.nextCheckin = day(o.cadence);
+    if (p.extend) { const r = S.promises.find(x => x.id === p.extend); if (r) r.due = nextWorkday(3); }
+  }
+  if (p.kind === 'note') S.notes.push({id:uid('n'), orgId:o.id, by, at:TODAY, type:'Call', text, internal:false});
+  if (p.kind === 'promise') S.promises.push({id:uid('r'), orgId:o.id, text, due:p.due, owner:p.owner, done:false});
+  if (p.kind === 'stage') o.stage = p.stage;
+  if (p.kind === 'request') S.requests.push({id:uid('q'), orgId:o.id, by:p.by, at:TODAY, text, status:'Open'});
+  if (p.kind === 'issue') { S.issues.push({at:TODAY, orgId:o.id, text}); const q = S.requests.find(x => x.id === p.req); if (q) q.status = 'Sent to Kris'; }
+  if (p.kind === 'review') { const w = S.workorders.find(x => x.id === p.wo); if (w) w.status = 'Approved'; }
+  if (p.kind === 'report') S.reports.push({at:TODAY, text});
+  S.doneKeys.push(p.key); S.pending = S.pending.filter(x => x.id !== id);
+  log(`${agentName(p.agent)}: approved "${p.title}"`);
+}
+
+function assistantView(){
+  if (!ui.ranOnce) { runAll(); ui.ranOnce = true; save(); }
+  const t = ui.agTab || 'briefing';
+  const sat = new Date().getDay() === 6;
+  const queue = S.pending.map(p => `<div class="prop"><div class="ag">${esc(agentName(p.agent))}</div><b>${esc(p.title)}</b>${p.orgId ? ` · ${orgLink(org(p.orgId))}` : ''}
+    ${p.quote ? `<div class="note">They wrote: "${esc(p.quote)}"</div>` : ''}
+    ${p.kind === 'stage' ? '' : `<textarea id="pa-${p.id}">${esc(p.text)}</textarea>`}
+    <div class="form"><button class="p s" data-act="approve" data-v="${p.id}">${APPROVE[p.kind] || 'Approve'}</button><button class="s" data-act="discard" data-v="${p.id}">Discard</button></div></div>`).join('');
+  return `<h1>CR Assistant</h1><p class="sub">Bill's helpers. They watch the customers, draft and suggest. Nothing goes to a customer until you press the button.</p>
+  ${sat ? '<div class="card warn" style="margin-bottom:12px">Shabbat: no briefings or nudges to Bill until dark. Urgent customer items go to Kris.</div>' : ''}
+  <h2>Waiting for you (${S.pending.length}) <button class="s" data-act="runall">Run all agents now</button></h2>
+  <div class="queue">${queue || '<div class="card">All clear. Nothing waiting.</div>'}</div>
+  <div class="agtabs">${AGENTS.map(a => `<button class="${t === a[0] ? 'on' : ''}" data-act="agtab" data-v="${a[0]}">${a[1]}</button>`).join('')}</div>
+  <div class="card"><h3>${agentName(t)} <span class="note">· runs: ${AGENTS.find(a => a[0] === t)[2]}</span></h3>${agentView(t)}</div>`;
+}
+
+function agentView(t){
+  if (t === 'briefing') {
+    const items = [];
+    const a = attention(S.orgs);
+    a.overdue.forEach(r => items.push([1, `Overdue promise: "${r.text}" for ${orgLink(org(r.orgId))}`, 'Send the heads-up waiting above, then do it']));
+    a.replies.forEach(o => items.push([2, `${orgLink(o)} is waiting on a reply`, 'Approve the drafted reply above']));
+    S.orgs.filter(o => S.invoices.some(i => i.orgId === o.id && i.status === 'Past due')).forEach(o => items.push([3, `${orgLink(o)} has a past-due invoice`, 'A friendly call, not an email']));
+    a.checkins.forEach(o => items.push([4, `Check-in due: ${orgLink(o)}`, 'Send the drafted check-in, or call']));
+    a.quiet.forEach(o => items.push([5, `${orgLink(o)} has gone quiet`, 'Call this week']));
+    a.soon.forEach(r => items.push([6, `Due soon: "${r.text}" (${ago(r.due)})`, nameOf(r.owner)]));
+    items.sort((x, y) => x[0] - y[0]);
+    return `<p>Good morning, ${myFirst()}. ${items.length} things today, most important first.</p>` + items.map((x, i) => `<div class="row"><b>${i + 1}.</b><span class="grow">${x[1]}<br><span class="ok">→ ${esc(x[2])}</span></span></div>`).join('');
+  }
+  if (t === 'notes') return `<p>After a call, type (or on a phone, say) a quick note. It files the call, sets the promises with dates, and suggests a stage change. You approve each one above.</p>
+    <div class="form"><select id="ncust"><option value="">Which customer? (or I'll guess)</option>${S.orgs.map(o => `<option value="${o.id}">${esc(o.name)}</option>`).join('')}</select></div>
+    <textarea id="nquick" placeholder="e.g. Talked to Gene at Halfway Hay. He's interested, wants a quote by Friday. Call him back after harvest."></textarea>
+    <div class="form"><button class="p" data-act="notetake">File it</button>${ui.noteMsg ? `<span class="warn">${esc(ui.noteMsg)}</span>` : ''}</div>`;
+  if (t === 'health') return `<p>Scores every customer: overdue promises, replies we owe, old requests, days since contact, past-due invoices. Under 60 = call this week.</p>
+    <table><tr><th>Customer</th><th>Score</th><th>Why</th></tr>${S.orgs.map(o => [o, healthScore(o)]).sort((a, b) => a[1].score - b[1].score).map(([o, h]) => `<tr><td>${orgLink(o)}</td><td>${scoreChip(h.score)}</td><td>${esc(h.why.join(', ') || 'all good')}</td></tr>`).join('')}</table>`;
+  if (t === 'report') { const r = reportStats();
+    return `<table><tr><td>Average time to answer a customer</td><td><b>${r.reply}</b></td></tr><tr><td>Promises kept on time</td><td><b>${r.kept}</b></td></tr><tr><td>Renewals in the next 60 days</td><td><b>${esc(r.renewals.join(', ') || 'none')}</b></td></tr><tr><td>Referrals logged</td><td><b>${r.referrals}</b></td></tr><tr><td>At risk</td><td><b>${esc(r.risk.join(', ') || 'none')}</b></td></tr></table>`; }
+  const what = {
+    inbox: 'Reads every customer message, sorts it (question, complaint, change request, thanks), and drafts a reply from the customer\'s history. Complaints also get a promise to call.',
+    checkins: 'When a customer\'s check-in comes due, drafts a personal message that mentions their open request and our next step.',
+    promises: 'Reminds the owner the day before a promise is due. If one slips, drafts a heads-up to the customer before they notice, and moves the date.',
+    requests: 'For each change request: checks for a contract on file, drafts the GitHub issue for Kris, and drafts the reply to the customer. Nothing is filed until approved.',
+    subs: 'Nudges subcontractors when work is due in 2 days or late, and queues handed-in work for review before it reaches a customer.',
+    reviews: 'When a milestone goes well on a healthy account, drafts the ask for a Google review or a referral.'
+  }[t];
+  const mine = S.pending.filter(p => p.agent === t);
+  const sent = t === 'requests' && S.issues.length ? `<h2>Sent to Kris</h2>${S.issues.map(i => `<div class="row"><span class="grow" style="white-space:pre-wrap">${esc(i.text)}</span></div>`).join('')}` : '';
+  return `<p>${what}</p><p>${mine.length ? mine.length + ' waiting for you above.' : 'Nothing waiting from this agent right now.'}</p>${sent}`;
+}
+
+/* ---------- chat ---------- */
+function chatView(){
+  const p = me();
+  if (p && p.kind === 'customer' && !can('own.chat')) return '';
+  const title = p ? 'Kriisko helper' : 'Chat with us';
+  if (!ui.chatOpen) return `<button class="chatbtn" data-act="chat">${p ? 'Ask the helper' : 'Chat with us'}</button>`;
+  return `<div class="chat"><div class="hd"><b>${title}</b><button class="s" data-act="chat">Close</button></div>
+   <div class="bd">${ui.chat.map(m => `<div class="b ${m.u?'u':'a'}">${m.html || esc(m.t)}</div>`).join('') || `<div class="b a">${p ? helpText() : 'Hi! Ask me anything about Kriisko.'}</div>`}</div>
+   <form data-act="chatsend"><input placeholder="Type here…" autocomplete="off"><button class="p">Send</button></form>
+   <div class="note" style="padding:0 12px 8px">Model: a stand-in for the AI that understands a few phrases.</div></div>`;
+}
+function say(t, html){ ui.chat.push({t, html}); }
+function helpText(){
+  const k = me().kind;
+  if (k === 'staff') return 'Try: "what needs me today", "who needs a check-in", "log call with Halfway Hay: wants a quote", "move Anthony Lakes to Signed".';
+  if (k === 'customer') return 'Try: "where is my project", "show my invoices", "I want to add a page for gift cards".';
+  return 'Try: "what is due from me", "my pay".';
+}
+function findOrg(s){ s = s.toLowerCase().trim(); return S.orgs.find(o => o.name.toLowerCase().includes(s) || s.includes(o.name.toLowerCase().split(' ')[0])); }
+
+function chatPublic(t){
+  const low = t.toLowerCase();
+  if (ui.chatWait === 'email') {
+    ui.chatWait = null;
+    const p = S.people.find(x => x.email.toLowerCase() === low.trim());
+    if (p) {
+      S.inbox.unshift({id:uid('e'), to:p.email, pid:p.id, at:Date.now(), expires:Date.now()+15*60e3, used:false});
+      log('Sign-in link emailed to ' + p.email);
+    } else log('Sign-in asked for an email not on file');
+    say("If that email is on file, a sign-in link is on its way. It works once and expires in 15 minutes.");
+    return;
+  }
+  if (/crm|sign ?in|log ?in|portal|customer relations|my account|my project/.test(low)) { ui.chatWait = 'email'; say('Sure. What email do we have on file for you?'); return; }
+  say("I'm the Kriisko helper. On the real site I answer questions about our services. If you're a customer, staff or subcontractor, ask me to take you to the CRM.");
+}
+
+function chatInside(t){
+  const low = t.toLowerCase(), p = me();
+  if (ui.pending && /^(yes|y|ok|confirm|do it)\b/.test(low)) { const f = ui.pending; ui.pending = null; f(); return; }
+  if (ui.pending && /^(no|n|cancel)\b/.test(low)) { ui.pending = null; say('Cancelled.'); return; }
+  ui.pending = null;
+  if (p.kind === 'staff') {
+    const orgs = staffOrgs();
+    if (/today|need|due|attention/.test(low)) {
+      const a = attention(orgs);
+      say(`Overdue promises: ${a.overdue.length ? a.overdue.map(r=>r.text+' ('+org(r.orgId).name+')').join('; ') : 'none'}.\nWaiting on a reply: ${a.replies.map(o=>o.name).join(', ') || 'none'}.\nCheck-ins due: ${a.checkins.map(o=>o.name).join(', ') || 'none'}.\nGone quiet: ${a.quiet.map(o=>o.name).join(', ') || 'none'}.`); return;
+    }
+    if (/check.?in/.test(low)) { const c = attention(orgs).checkins; say(c.length ? 'Check-ins due: ' + c.map(o=>o.name+' ('+ago(o.nextCheckin)+')').join(', ') + '. Open the customer\'s Check-ins tab for a drafted message.' : 'No check-ins due.'); return; }
+    let m = low.match(/^log (call|text|email|meeting|note) with (.+?):\s*(.+)$/);
+    if (m && can('notes.write')) {
+      const o = findOrg(m[2]); if (!o) { say("I couldn't find that customer."); return; }
+      const type = m[1][0].toUpperCase()+m[1].slice(1), text = t.split(':').slice(1).join(':').trim();
+      S.notes.push({id:uid('n'), orgId:o.id, by:realMe().id, at:TODAY, type, text, internal:false}); log(`${type} logged for ${o.name}`); save();
+      say(`Logged a ${type.toLowerCase()} on ${o.name}: "${text}".`); return;
+    }
+    m = low.match(/^move (.+?) to (lead|contacted|proposal|signed|active care)$/);
+    if (m && can('pipeline')) {
+      const o = findOrg(m[1]); if (!o) { say("I couldn't find that customer."); return; }
+      const st = STAGES.find(s => s.toLowerCase() === m[2]);
+      ui.pending = () => { o.stage = st; log(`${o.name} moved to ${st}`); save(); say(`Done: ${o.name} is now in ${st}.`); };
+      say(`Move ${o.name} from ${o.stage} to ${st}? Type "yes" to confirm.`); return;
+    }
+  } else if (p.kind === 'customer') {
+    const o = org(p.orgId);
+    if (/where|progress|status|project/.test(low) && can('own.project')) { const ms = o.project.milestones; say(ms.length ? ms.map(x => (x.done?'✓ ':'○ ')+x.name).join('\n') : 'Your project has not started yet.'); return; }
+    if (/invoice|bill|owe/.test(low)) { say(can('own.invoices') ? S.invoices.filter(i=>i.orgId===o.id).map(i=>`${i.label}: ${money(i.amount)} (${i.status})`).join('\n') || 'No invoices.' : "Invoices aren't part of your portal. Kris can send them to you."); return; }
+    if (/add|change|want|could you|can you/.test(low) && can('own.requests')) {
+      ui.pending = () => { S.requests.push({id:uid('q'), orgId:o.id, by:p.id, at:TODAY, text:t, status:'Open'}); log(`Change request from ${o.name}`); save(); say('Sent. Kris will tell you what it involves before any work starts.'); };
+      say(`Send this to Kris as a change request?\n"${t}"\nType "yes" to send.`); return;
+    }
+  } else {
+    if (/due|work|order|job/.test(low)) { const l = S.workorders.filter(w=>w.subId===p.id); say(l.length ? l.map(w=>`${w.title}: due ${ago(w.due)}, ${w.status}`).join('\n') : 'Nothing assigned right now.'); return; }
+    if (/pay|owe|paid/.test(low) && can('sub.pay')) { const l = S.workorders.filter(w=>w.subId===p.id); say(l.map(w=>`${w.title}: ${money(w.pay)} (${w.status})`).join('\n') || 'Nothing yet.'); return; }
+  }
+  say("I didn't catch that. " + helpText());
+}
+
+/* ---------- inbox + sign-in ---------- */
+function inboxView(){
+  if (!ui.inboxOpen) return '';
+  return `<div class="inbox"><div class="hd">Demo inbox (stands in for each person's email)<button class="s" data-act="inbox">Close</button></div>
+  ${S.inbox.map(m => `<div class="mail"><b>To:</b> ${esc(m.to)}<br><b>Kriisko sign-in link</b><br>Click to sign in. This link works once and expires in 15 minutes.<br>
+   ${m.used ? '<i>Used</i>' : m.expires < Date.now() ? '<i>Expired</i>' : `<a href="#" data-act="magic" data-v="${m.id}">Sign in to Kriisko</a>`}</div>`).join('') || '<div class="mail">No emails yet. Ask the chat to take you to the CRM.</div>'}</div>`;
+}
+function modalView(){
+  if (!ui.confirmLogin) return '';
+  const p = person(ui.confirmLogin);
+  return `<div class="modal"><div class="card"><h3>Signed in as ${esc(p.name)}</h3><p>${KIND[p.kind]} · ${esc(tierOf(p) ? tierOf(p).name : 'no tier')}</p>
+   <label><input type="checkbox" id="remember" checked> Remember this device for 30 days</label>
+   <div class="form"><button class="p" data-act="enter">Continue</button></div></div></div>`;
+}
+
+/* ---------- actions ---------- */
+function val(id){ const e = document.getElementById(id); return e ? e.value.trim() : ''; }
+const A = {
+  reset(){ if (confirm('Put the sample data back? Everything changed in this model is lost.')) { S = seed(); sess = null; saveSess(false); ui = {...ui, page:'', org:null, chat:[], inboxOpen:false}; save(); } },
+  inbox(){ ui.inboxOpen = !ui.inboxOpen; },
+  chat(){ ui.chatOpen = !ui.chatOpen; },
+  magic(el){ const m = S.inbox.find(x=>x.id===el.dataset.v); if (!m || m.used || m.expires < Date.now()) return; m.used = true; log('Signed in: ' + m.to); ui.confirmLogin = m.pid; ui.inboxOpen = false; ui.chatOpen = false; ui.chat = []; save(); },
+  enter(){ const rem = document.getElementById('remember').checked; sess = {personId: ui.confirmLogin, until: Date.now() + 30*864e5}; saveSess(rem); ui.confirmLogin = null; ui.page = ''; ui.ranOnce = false; },
+  logout(){ sess = null; saveSess(false); ui.chat = []; ui.chatOpen = false; },
+  go(el){ ui.page = el.dataset.v; ui.org = null; },
+  openorg(el){ ui.page = 'customers'; ui.org = el.dataset.v; ui.tab = el.dataset.tab || 'Timeline'; },
+  tab(el){ ui.tab = el.dataset.v; },
+  viewas(el){ sess.viewAs = el.dataset.v; ui.page = ''; ui.chat = []; log('Previewed as ' + nameOf(el.dataset.v)); },
+  stopview(){ delete sess.viewAs; ui.page = ''; ui.chat = []; },
+  addnote(el){ const t = val('ntext'); if (!t) return; const o = org(el.dataset.v); S.notes.push({id:uid('n'), orgId:o.id, by:realMe().id, at:TODAY, type:val('ntype'), text:t, internal:document.getElementById('nint').checked}); log(`${val('ntype')} logged for ${o.name}`); },
+  addprom(el){ const t = val('ptext'); if (!t) return; const o = org(el.dataset.v); S.promises.push({id:uid('r'), orgId:o.id, text:t, due:val('pdue')||day(3), owner:val('powner'), done:false}); log(`Promise added for ${o.name}: ${t}`); },
+  promdone(el){ const r = S.promises.find(x=>x.id===el.dataset.v); r.done = true; log(`Promise kept for ${org(r.orgId).name}: ${r.text}`); },
+  cadence(el){ const o = org(el.dataset.v); o.cadence = Number(el.value); log(`${o.name} check-ins every ${o.cadence} days`); },
+  checkin(el){ const o = org(el.dataset.v); const t = val('cktext'); if (!t) return; S.messages.push({id:uid('m'), orgId:o.id, from:realMe().id, at:TODAY, text:t}); o.nextCheckin = day(o.cadence); log(`Check-in sent to ${o.name}`); },
+  checkincall(el){ const o = org(el.dataset.v); S.notes.push({id:uid('n'), orgId:o.id, by:realMe().id, at:TODAY, type:'Call', text:'Check-in call.', internal:false}); o.nextCheckin = day(o.cadence); log(`Check-in call with ${o.name}`); },
+  sendmsg(el){ const t = val('mtext'); if (!t) return; const o = org(el.dataset.v); S.messages.push({id:uid('m'), orgId:o.id, from:me().id, at:TODAY, text:t}); log(`Message in ${o.name} thread from ${me().name}`); },
+  addreq(el){ const t = val('rtext'); if (!t) return; const o = org(el.dataset.v); S.requests.push({id:uid('q'), orgId:o.id, by:me().id, at:TODAY, text:t, status:'Open'}); log(`Change request from ${o.name}`); },
+  reqstatus(el){ const q = S.requests.find(x=>x.id===el.dataset.v); q.status = el.dataset.s; log(`Request "${q.text}" ${q.status.toLowerCase()}`); },
+  addcontact(el){ const n = val('cname'), e = val('cemail'); if (!n || !e) return; S.people.push({id:uid('p'), name:n, email:e, kind:'customer', orgId:el.dataset.v}); log(`Contact ${n} added to ${org(el.dataset.v).name}`); },
+  addorg(){ const n = val('neworg'); if (!n) return; S.orgs.push({id:uid('o'), name:n, stage:'Lead', tierId:'t-c1', owner:realMe().id, cadence:14, nextCheckin:day(7), project:{name:'Not started', milestones:[]}}); log(`Customer added: ${n}`); },
+  orgtier(el){ const o = org(el.dataset.v); o.tierId = el.value; log(`${o.name} tier set to ${S.tiers.find(t=>t.id===el.value).name}`); },
+  move(el){ const o = org(el.dataset.v); const i = STAGES.indexOf(o.stage) + Number(el.dataset.d); o.stage = STAGES[i]; log(`${o.name} moved to ${o.stage}`); },
+  addwo(){ const t = val('wtitle'); if (!t) return; S.workorders.push({id:uid('w'), orgId:val('worg'), subId:val('wsub'), title:t, due:val('wdue')||day(7), pay:Number(val('wpay'))||0, status:'Assigned', handin:''}); log(`Work order "${t}" assigned to ${nameOf(val('wsub'))}`); },
+  woapprove(el){ const w = S.workorders.find(x=>x.id===el.dataset.v); w.status = 'Approved'; log(`Approved "${w.title}" from ${nameOf(w.subId)}`); },
+  wopaid(el){ const w = S.workorders.find(x=>x.id===el.dataset.v); w.status = 'Paid'; log(`Paid ${nameOf(w.subId)} for "${w.title}"`); },
+  handin(el){ const w = S.workorders.find(x=>x.id===el.dataset.v); const f = val('hi-'+w.id); if (!f) return; w.handin = f; w.status = 'Handed in'; log(`${me().name} handed in "${w.title}"`); },
+  submsg(el){ const w = S.workorders.find(x=>x.id===el.dataset.v); const t = val('sm-'+w.id); if (!t) return; S.messages.push({id:uid('m'), orgId:w.orgId, from:me().id, at:TODAY, text:t}); log(`${me().name} messaged ${org(w.orgId).name}`); },
+  ptier(el){ const p = person(el.dataset.v); p.tierId = el.value; log(`${p.name} tier set to ${S.tiers.find(t=>t.id===el.value).name}`); },
+  delperson(el){ const p = person(el.dataset.v); if (!confirm('Remove ' + p.name + '?')) return; S.people = S.people.filter(x=>x.id!==p.id); log(`Removed ${p.name}`); },
+  addperson(){ const n = val('npname'), e = val('npemail'), k = val('npkind'); if (!n || !e) return;
+    const p = {id:uid('p'), name:n, email:e};
+    if (k.startsWith('org:')) Object.assign(p, {kind:'customer', orgId:k.slice(4)}); else Object.assign(p, {kind:k, tierId: S.tiers.find(t=>t.kind===k).id});
+    S.people.push(p); log(`Added ${n} (${KIND[p.kind]})`); },
+  tname(el){ const t = S.tiers.find(x=>x.id===el.dataset.v); t.name = el.value.trim() || t.name; log(`Tier renamed: ${t.name}`); },
+  tperm(el){ const t = S.tiers.find(x=>x.id===el.dataset.v); const p = el.dataset.p; t.perms = el.checked ? [...new Set([...t.perms, p])] : t.perms.filter(x=>x!==p); log(`${t.name}: ${el.checked?'can':'cannot'} ${PERMS[t.kind].find(x=>x[0]===p)[1].toLowerCase()}`); },
+  addtier(el){ const k = el.dataset.v, n = val('nt-'+k); if (!n) return; S.tiers.push({id:uid('t'), kind:k, name:n, perms:[]}); log(`New ${KIND[k].toLowerCase()} tier: ${n}`); },
+  deltier(el){ const t = S.tiers.find(x=>x.id===el.dataset.v); S.tiers = S.tiers.filter(x=>x.id!==t.id); log(`Deleted tier ${t.name}`); },
+  nop(){ alert('In the real system this opens the document.'); },
+  nop2(){},
+  agtab(el){ ui.agTab = el.dataset.v; ui.noteMsg = ''; },
+  runall(){ runAll(); log('Ran all agents'); },
+  approve(el){ const ta = document.getElementById('pa-' + el.dataset.v); const p = S.pending.find(x => x.id === el.dataset.v); approve(el.dataset.v, ta ? ta.value.trim() : (p ? p.text : '')); },
+  discard(el){ const p = S.pending.find(x => x.id === el.dataset.v); if (!p) return; S.doneKeys.push(p.key); S.pending = S.pending.filter(x => x.id !== p.id); log(`${agentName(p.agent)}: discarded "${p.title}"`); },
+  notetake(){ const t = val('nquick'); if (!t) return; ui.noteMsg = parseNote(t, val('ncust')); }
+};
+
+document.addEventListener('click', e => {
+  const el = e.target.closest('[data-act]');
+  if (!el || el.tagName === 'SELECT' || el.tagName === 'FORM' || (el.tagName === 'INPUT' && el.type !== 'checkbox')) return;
+  if (el.tagName === 'INPUT') return; // checkboxes handled on change
+  e.preventDefault();
+  const f = A[el.dataset.act]; if (!f) return;
+  f(el); save(); render();
+});
+document.addEventListener('change', e => {
+  const el = e.target; const f = el.dataset && A[el.dataset.act]; if (!f) return;
+  f(el); save(); render();
+});
+document.addEventListener('submit', e => {
+  if (e.target.dataset.act !== 'chatsend') return;
+  e.preventDefault();
+  const inp = e.target.querySelector('input'); const t = inp.value.trim(); if (!t) return;
+  ui.chat.push({t, u:true});
+  if (me()) chatInside(t); else chatPublic(t);
+  save(); render();
+});
+render();
+</script>
+</body>
+</html>
