@@ -128,10 +128,10 @@
 <script>
 /* Kriisko CRM working model (Bill, 2026-11-09). One file, sample data, saves in this browser only.
    Nothing is emailed: the "Demo inbox" stands in for each person's real email. */
-const KEY = 'kriiskoCrmModel.v3', SKEY = 'kriiskoCrmModel.session';
+const KEY = 'kriiskoCrmModel.v4', SKEY = 'kriiskoCrmModel.session';
 const STAGES = ['Lead', 'Contacted', 'Proposal', 'Signed', 'Active care'];
 const PERMS = {
-  staff: [['assistant','CR Assistant and its agents'],['customers.all','See all customers'],['pipeline','Pipeline board'],['notes.write','Log calls, notes, promises, check-ins'],['workorders.assign','Assign work to subcontractors'],['money.all','See money: invoices, sub pay'],['admin.people','Manage people and tier levels (admin)'],['log.view','See the activity log']],
+  staff: [['assistant','CR Assistant and its agents'],['board','Build board (kanban)'],['customers.all','See all customers'],['pipeline','Pipeline board'],['notes.write','Log calls, notes, promises, check-ins'],['workorders.assign','Assign work to subcontractors'],['money.all','See money: invoices, sub pay'],['admin.people','Manage people and tier levels (admin)'],['log.view','See the activity log']],
   customer: [['own.project','See their project progress'],['own.messages','Message Kriisko'],['own.requests','Send change requests'],['own.invoices','See their invoices'],['own.documents','See their contract and documents'],['own.chat','Use the AI helper']],
   sub: [['sub.orders','See their work orders'],['sub.handin','Hand in finished work'],['sub.pay','See their pay'],['sub.customerName','See which customer a job is for'],['sub.message','Message the customer directly']]
 };
@@ -139,6 +139,8 @@ const KIND = {staff:'Kriisko', customer:'Customer', sub:'Subcontractor'};
 
 function day(n){ const d = new Date(); d.setHours(12,0,0,0); d.setDate(d.getDate()+n); return d.toISOString().slice(0,10); }
 const TODAY = day(0);
+function wday(n){ let d = 0, k = 0; while (k < -n) { d--; const g = new Date(day(d) + 'T12:00').getDay(); if (g > 0 && g < 6) k++; } return day(d); }
+function stamp(){ const d = new Date(), p = n => String(n).padStart(2,'0'); return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`; }
 function ago(iso){ const n = Math.round((new Date(TODAY) - new Date(iso.slice(0,10)))/864e5); return n===0?'today':n===1?'yesterday':n===-1?'tomorrow':n>0?n+' days ago':'in '+(-n)+' days'; }
 function esc(s){ return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 function uid(p){ return p + Math.random().toString(36).slice(2,8); }
@@ -150,18 +152,18 @@ function seed(){
     tiers: [
       {id:'t-admin', kind:'staff', name:'Admin', perms: all('staff')},
       {id:'t-sales', kind:'staff', name:'Sales', perms:['customers.all','pipeline','notes.write']},
-      {id:'t-c1', kind:'customer', name:'Basic', perms:['own.project','own.messages']},
-      {id:'t-c2', kind:'customer', name:'Care', perms:['own.project','own.messages','own.requests','own.invoices','own.chat']},
-      {id:'t-c3', kind:'customer', name:'Corporate', perms: all('customer')},
+      {id:'t-c1', kind:'customer', name:'Basic', replyHours:24, perms:['own.project','own.messages']},
+      {id:'t-c2', kind:'customer', name:'Care', replyHours:8, perms:['own.project','own.messages','own.requests','own.invoices','own.chat']},
+      {id:'t-c3', kind:'customer', name:'Corporate', replyHours:4, perms: all('customer')},
       {id:'t-s1', kind:'sub', name:'Task', perms:['sub.orders','sub.handin','sub.pay']},
       {id:'t-s2', kind:'sub', name:'Trusted', perms: all('sub')}
     ],
     orgs: [
-      {id:'o1', name:'Sumpter Valley Bakery', stage:'Active care', tierId:'t-c2', owner:'p-kris', cadence:30, nextCheckin:day(-3), renewal:day(40), project:{name:'Website + online orders', milestones:[{name:'Design approved', done:true, src:'GitHub issue #4 closed'},{name:'Online ordering live', done:true, src:'GitHub PR #9 merged'},{name:'Holiday menu page', done:false, src:'GitHub issue #12 open'}]}},
-      {id:'o2', name:'Anthony Lakes Outfitters', stage:'Proposal', tierId:'t-c1', owner:'p-bill', cadence:14, nextCheckin:day(2), project:{name:'Booking site (proposed)', milestones:[{name:'Proposal sent', done:true, src:'CRM'},{name:'Contract signed', done:false, src:'CRM'}]}},
-      {id:'o3', name:'Main Street Dental', stage:'Signed', tierId:'t-c3', owner:'p-kris', cadence:30, nextCheckin:day(9), project:{name:'AI receptionist', milestones:[{name:'Call scripts approved', done:true, src:'GitHub issue #2 closed'},{name:'Phone line connected', done:false, src:'GitHub issue #5 open'},{name:'Go live', done:false, src:'GitHub issue #6 open'}]}},
-      {id:'o4', name:'Halfway Hay & Feed', stage:'Contacted', tierId:'t-c1', owner:'p-sales', cadence:14, nextCheckin:day(-1), project:{name:'Not started', milestones:[]}},
-      {id:'o5', name:'Elkhorn Auto Glass', stage:'Lead', tierId:'t-c1', owner:'p-sales', cadence:14, nextCheckin:day(5), project:{name:'Not started', milestones:[]}}
+      {id:'o1', name:'Sumpter Valley Bakery', value:3500, stage:'Active care', tierId:'t-c2', owner:'p-kris', cadence:30, nextCheckin:day(-3), renewal:day(40), project:{name:'Website + online orders', milestones:[{name:'Design approved', done:true, src:'GitHub issue #4 closed'},{name:'Online ordering live', done:true, src:'GitHub PR #9 merged'},{name:'Holiday menu page', done:false, src:'GitHub issue #12 open'}]}},
+      {id:'o2', name:'Anthony Lakes Outfitters', value:4000, stage:'Proposal', tierId:'t-c1', owner:'p-bill', cadence:14, nextCheckin:day(2), project:{name:'Booking site (proposed)', milestones:[{name:'Proposal sent', done:true, src:'CRM'},{name:'Contract signed', done:false, src:'CRM'}]}},
+      {id:'o3', name:'Main Street Dental', value:6000, stage:'Signed', tierId:'t-c3', owner:'p-kris', cadence:30, nextCheckin:day(9), project:{name:'AI receptionist', milestones:[{name:'Call scripts approved', done:true, src:'GitHub issue #2 closed'},{name:'Phone line connected', done:false, src:'GitHub issue #5 open'},{name:'Go live', done:false, src:'GitHub issue #6 open'}]}},
+      {id:'o4', name:'Halfway Hay & Feed', value:1500, stage:'Contacted', tierId:'t-c1', owner:'p-sales', cadence:14, nextCheckin:day(-1), project:{name:'Not started', milestones:[]}},
+      {id:'o5', name:'Elkhorn Auto Glass', value:1500, stage:'Lead', tierId:'t-c1', owner:'p-sales', cadence:14, nextCheckin:day(5), project:{name:'Not started', milestones:[]}}
     ],
     people: [
       {id:'p-bill', name:'Bill Brown', email:'bill@kriisko.test', kind:'staff', tierId:'t-admin'},
@@ -189,13 +191,13 @@ function seed(){
       {id:'r3', orgId:'o3', text:'Test call with Pat before go-live', due:day(6), owner:'p-kris', done:false}
     ],
     messages: [
-      {id:'m1', orgId:'o1', from:'p-c1', at:day(-4), text:'Could we add gift cards to online orders?'},
-      {id:'m2', orgId:'o3', from:'p-c3b', at:day(-2), text:'Which number do patients call during the test?'},
-      {id:'m3', orgId:'o3', from:'p-kris', at:day(-2), text:'Your main line. I will be on the call with you.'},
-      {id:'m4', orgId:'o3', from:'p-c3', at:day(-1), text:'The test call went to voicemail twice. Is something wrong with the setup?'}
+      {id:'m1', orgId:'o1', from:'p-c1', at:wday(-3)+'T09:30', via:'Email', text:'Could we add gift cards to online orders?'},
+      {id:'m2', orgId:'o3', from:'p-c3b', at:wday(-2)+'T11:05', text:'Which number do patients call during the test?'},
+      {id:'m3', orgId:'o3', from:'p-kris', at:wday(-2)+'T13:20', text:'Your main line. I will be on the call with you.'},
+      {id:'m4', orgId:'o3', from:'p-c3', at:wday(-1)+'T15:40', text:'The test call went to voicemail twice. Is something wrong with the setup?'}
     ],
     requests: [
-      {id:'q1', orgId:'o1', by:'p-c1', at:day(-4), text:'Add gift cards to online orders', status:'Open'}
+      {id:'q1', orgId:'o1', by:'p-c1', at:wday(-3)+'T09:31', text:'Add gift cards to online orders', status:'Open'}
     ],
     workorders: [
       {id:'w1', orgId:'o1', subId:'p-robyn', title:'Holiday menu photos (6)', due:day(3), pay:120, status:'Assigned', handin:''},
@@ -207,6 +209,18 @@ function seed(){
       {id:'i3', orgId:'o2', label:'Booking site deposit', amount:750, status:'Past due'}
     ],
     pending: [], doneKeys: [], issues: [], reports: [],
+    // Build board cards: internal work, linked to the customer's milestone (ms) and a GitHub issue (gh)
+    cards: [
+      {id:'c1', orgId:'o1', title:'Holiday menu page', col:'Building', created:day(-10), since:day(-6), gh:'#12', ms:2, blocked:''},
+      {id:'c2', orgId:'o1', title:'Gift cards on online orders', col:'Backlog', created:day(-4), since:day(-4), gh:'', ms:null, blocked:''},
+      {id:'c3', orgId:'o3', title:'Phone line connected', col:'Building', created:day(-12), since:day(-5), gh:'#5', ms:1, blocked:'Waiting on the phone company to move the number', blockedSince:day(-3)},
+      {id:'c4', orgId:'o3', title:'Go live', col:'Backlog', created:day(-12), since:day(-12), gh:'#6', ms:2, blocked:''},
+      {id:'c5', orgId:'o3', title:'Greeting voice lines', col:'Review', created:day(-8), since:day(-1), gh:'#7', ms:null, blocked:''},
+      {id:'c6', orgId:'o1', title:'Online ordering live', col:'Done', created:day(-40), since:day(-30), doneAt:day(-30), gh:'#9', ms:1, blocked:''},
+      {id:'c7', orgId:'o2', title:'Booking site mockup', col:'Building', created:day(-3), since:day(-2), gh:'#3', ms:null, blocked:''},
+      {id:'c8', orgId:'o5', title:'Windshield booking page sample', col:'Building', created:day(-1), since:day(-1), gh:'', ms:null, blocked:''}
+    ],
+    wip: {Backlog:0, Building:3, Review:2, Done:0},
     docs: [
       {id:'d1', orgId:'o3', name:'Service agreement (signed)'},
       {id:'d2', orgId:'o3', name:'Milestone plan'}
@@ -283,7 +297,9 @@ function navItems(){
     items.push(['today','Today']);
     if (can('assistant')) items.push(['assistant', `CR Assistant${S.pending.length ? ' (' + S.pending.length + ')' : ''}`]);
     if (can('customers.all')) items.push(['customers','Customers']);
+    if (can('customers.all')) { const late = slaItems().filter(i => i.left < 0).length; items.push(['queue', `Queue${late ? ' (' + late + ' late)' : ''}`]); }
     if (can('pipeline')) items.push(['pipeline','Pipeline']);
+    if (can('board')) items.push(['board','Build board']);
     if (can('workorders.assign')) items.push(['work','Work orders']);
     if (can('admin.people')) items.push(['people','People & tiers']);
     if (can('log.view')) items.push(['log','Activity log']);
@@ -319,6 +335,8 @@ function pageView(){
     case 'assistant': return assistantView();
     case 'customers': return ui.org ? orgView(org(ui.org)) : customersView();
     case 'pipeline': return pipelineView();
+    case 'queue': return queueView();
+    case 'board': return boardView();
     case 'work': return workView();
     case 'people': return peopleView();
     case 'log': return logView();
@@ -346,7 +364,7 @@ function todayView(){
   ${can('assistant') ? `<p><a href="#" data-act="go" data-v="assistant">The CR Assistant has drafts ready →</a></p>` : ''}
   <div class="grid">
    ${box('Promises overdue','bad', a.overdue.map(r => `<div class="row"><span class="grow">${esc(r.text)} · ${orgLink(org(r.orgId))}<br><span class="bad">due ${ago(r.due)}</span> · ${esc(nameOf(r.owner))}</span><button class="s" data-act="promdone" data-v="${r.id}">Done</button></div>`))}
-   ${box('Customers waiting on a reply','bad', a.replies.map(o => `<div class="row"><span class="grow">${orgLink(o)}</span><button class="s" data-act="openorg" data-v="${o.id}" data-tab="Messages">Reply</button></div>`))}
+   ${box('Reply clock','bad', slaItems().map(i => `<div class="row"><span class="grow">${orgLink(i.o)} · ${i.what}<br>${clock(i)}</span><button class="s" data-act="openorg" data-v="${i.o.id}" data-tab="${i.tab}">${i.tab === 'Messages' ? 'Reply' : 'Triage'}</button></div>`))}
    ${box('Check-ins due','warn', a.checkins.map(o => `<div class="row"><span class="grow">${orgLink(o)} · due ${ago(o.nextCheckin)}</span><button class="s" data-act="openorg" data-v="${o.id}" data-tab="Check-ins">Check in</button></div>`))}
    ${box('Gone quiet (60+ days)','warn', a.quiet.map(o => `<div class="row"><span class="grow">${orgLink(o)} · last contact ${lastContact(o) ? ago(lastContact(o)) : 'never'}</span></div>`))}
    ${box('Promises due in 3 days','', a.soon.map(r => `<div class="row"><span class="grow">${esc(r.text)} · ${orgLink(org(r.orgId))} · due ${ago(r.due)}</span></div>`))}
@@ -505,9 +523,13 @@ function subPayView(){
   <table><tr><th>Job</th><th>Pay</th><th>Status</th></tr>${list.map(w => `<tr><td>${esc(w.title)}</td><td>${money(w.pay)}</td><td>${w.status}</td></tr>`).join('')}</table>`;
 }
 
+// Weighted forecast (Salesforce-style): each stage's chance of turning into money.
+const PROB = {'Lead':0.1, 'Contacted':0.2, 'Proposal':0.5, 'Signed':0.9, 'Active care':1};
 function pipelineView(){
-  return `<h1>Pipeline</h1><p class="sub">Sales stages. Moving a customer is logged.</p>
-  <div class="kanban">${STAGES.map(st => `<div class="col"><b>${st}</b>${S.orgs.filter(o=>o.stage===st).map(o => `<div class="kcard">${orgLink(o)}<div class="note">${health(o)} · ${esc(nameOf(o.owner))}</div>
+  const m = can('money.all'), sum = st => S.orgs.filter(o => o.stage === st).reduce((a, o) => a + (o.value || 0), 0);
+  const total = STAGES.reduce((a, st) => a + sum(st), 0), weighted = STAGES.reduce((a, st) => a + sum(st) * PROB[st], 0);
+  return `<h1>Pipeline</h1><p class="sub">Sales stages. Moving a customer is logged.${m ? ` Forecast: <b>${money(Math.round(weighted))}</b> weighted, of ${money(total)} in the pipeline (sample amounts).` : ''}</p>
+  <div class="kanban">${STAGES.map(st => `<div class="col"><b>${st}</b>${m ? `<div class="note">${money(sum(st))} · ${Math.round(PROB[st] * 100)}% likely</div>` : ''}${S.orgs.filter(o=>o.stage===st).map(o => `<div class="kcard">${orgLink(o)}<div class="note">${health(o)} · ${esc(nameOf(o.owner))}</div>
     <div class="form">${STAGES.indexOf(st)>0?`<button class="s" data-act="move" data-v="${o.id}" data-d="-1">←</button>`:''}${STAGES.indexOf(st)<STAGES.length-1?`<button class="s" data-act="move" data-v="${o.id}" data-d="1">→</button>`:''}</div></div>`).join('')}</div>`).join('')}</div>`;
 }
 
@@ -516,8 +538,8 @@ function peopleView(){
   const peopleRows = S.people.map(p => `<tr><td>${esc(p.name)}</td><td>${esc(p.email)}</td><td><span class="chip ${p.kind}">${KIND[p.kind]}</span></td>
     <td>${p.kind==='customer' ? `${esc(org(p.orgId).name)} → ${esc(tierOf(p).name)}` : `<select data-act="ptier" data-v="${p.id}" ${p.id===realMe().id?'disabled title="Another admin changes your tier"':''}>${tierOpts(p.kind, p.tierId)}</select>`}</td>
     <td>${p.id===realMe().id ? 'you' : `<button class="s" data-act="viewas" data-v="${p.id}">Preview as</button> <button class="s x" data-act="delperson" data-v="${p.id}">Remove</button>`}</td></tr>`).join('');
-  const tierBlock = kind => `<h2>${KIND[kind]} tiers</h2><table><tr><th>Tier</th>${PERMS[kind].map(p=>`<th>${p[1]}</th>`).join('')}<th></th></tr>
-    ${S.tiers.filter(t=>t.kind===kind).map(t => `<tr><td><input value="${esc(t.name)}" data-act="tname" data-v="${t.id}"></td>${PERMS[kind].map(p => `<td><input type="checkbox" data-act="tperm" data-v="${t.id}" data-p="${p[0]}" ${t.perms.includes(p[0])?'checked':''} ${t.id==='t-admin'&&p[0]==='admin.people'?'disabled':''}></td>`).join('')}
+  const tierBlock = kind => `<h2>${KIND[kind]} tiers</h2><table><tr><th>Tier</th>${kind === 'customer' ? '<th>Reply target (business hours, internal)</th>' : ''}${PERMS[kind].map(p=>`<th>${p[1]}</th>`).join('')}<th></th></tr>
+    ${S.tiers.filter(t=>t.kind===kind).map(t => `<tr><td><input value="${esc(t.name)}" data-act="tname" data-v="${t.id}"></td>${kind === 'customer' ? `<td><input type="number" min="1" style="width:80px" value="${t.replyHours || 24}" data-act="treply" data-v="${t.id}"></td>` : ''}${PERMS[kind].map(p => `<td><input type="checkbox" data-act="tperm" data-v="${t.id}" data-p="${p[0]}" ${t.perms.includes(p[0])?'checked':''} ${t.id==='t-admin'&&p[0]==='admin.people'?'disabled':''}></td>`).join('')}
     <td>${tierUsed(t) ? '' : `<button class="s x" data-act="deltier" data-v="${t.id}">Delete</button>`}</td></tr>`).join('')}</table>
     <div class="form"><input id="nt-${kind}" placeholder="New ${KIND[kind].toLowerCase()} tier name"><button data-act="addtier" data-v="${kind}">Add tier</button></div>`;
   return `<h1>People &amp; tiers</h1><p class="sub">Admin sets every person's tier. A customer company has one tier that covers all its people. Checkboxes decide what each tier can see and do.</p>
@@ -532,6 +554,80 @@ function tierUsed(t){ return S.people.some(p=>p.tierId===t.id) || S.orgs.some(o=
 function logView(){
   return `<h1>Activity log</h1><p class="sub">Every change: who, what, when.</p>
   <table><tr><th>When</th><th>Who</th><th>What</th></tr>${S.log.map(l => `<tr><td>${new Date(l.at).toLocaleString()}</td><td>${esc(l.who)}</td><td>${esc(l.what)}</td></tr>`).join('') || '<tr><td colspan="3">Nothing yet.</td></tr>'}</table>`;
+}
+
+/* ---------- Reply clock (Salesforce entitlements/milestones, Jira SLAs) ----------
+   Each customer tier has an internal reply target in business hours (Mon-Fri 8-5).
+   The clock pauses nights and weekends, turns amber at 75% used and red when late. */
+function bh(start, end){
+  const s = new Date(start.length <= 10 ? start + 'T09:00' : start), e = end ? new Date(end.length <= 10 ? end + 'T17:00' : end) : new Date();
+  let mins = 0; const d = new Date(s);
+  while (d < e) { const wd = d.getDay(), h = d.getHours(); if (wd > 0 && wd < 6 && h >= 8 && h < 17) mins += 5; d.setMinutes(d.getMinutes() + 5); }
+  return mins / 60;
+}
+function replyTarget(o){ const t = S.tiers.find(x => x.id === o.tierId); return (t && t.replyHours) || 24; }
+const isCust = m => (person(m.from) || {}).kind === 'customer';
+function slaItems(){
+  const items = [];
+  S.orgs.forEach(o => {
+    const t = S.messages.filter(m => m.orgId === o.id);
+    let last = -1; t.forEach((m, i) => { if (!isCust(m)) last = i; });
+    const first = t.slice(last + 1).find(isCust);
+    if (first) items.push({o, what:'Message' + (first.via ? ' (' + first.via.toLowerCase() + ')' : ''), text:first.text, start:first.at, target:replyTarget(o), tab:'Messages'});
+  });
+  S.requests.filter(q => q.status === 'Open').forEach(q => { const o = org(q.orgId); items.push({o, what:'Change request', text:q.text, start:q.at, target:replyTarget(o) * 2, tab:'Requests'}); });
+  items.forEach(i => { i.used = bh(i.start); i.left = i.target - i.used; });
+  return items.sort((a, b) => a.left - b.left);
+}
+function hrs(h){ h = Math.abs(h); return h < 1 ? Math.round(h * 60) + 'm' : Math.floor(h) + 'h ' + Math.round((h % 1) * 60) + 'm'; }
+function clock(i){
+  const cls = i.left < 0 ? 'bad' : i.used >= i.target * 0.75 ? 'warn' : 'ok';
+  return `<span class="${cls}"><b>${i.left < 0 ? 'Late by ' + hrs(i.left) : 'Answer within ' + hrs(i.left)}</b></span> <span class="note">(target ${i.target} business hrs)</span>`;
+}
+
+function queueView(){
+  const items = slaItems();
+  return `<h1>Queue</h1><p class="sub">Every customer message and change request waiting on us, in one list, most urgent first. The clock counts business hours only (Mon–Fri, 8–5) and depends on the customer's tier.</p>
+  <table><tr><th>Customer</th><th>Tier</th><th>What</th><th>Clock</th><th></th></tr>
+  ${items.map(i => `<tr><td>${orgLink(i.o)}</td><td>${esc((S.tiers.find(t => t.id === i.o.tierId) || {}).name)}</td><td>${i.what}<br><span class="note">"${esc(i.text)}"</span></td><td>${clock(i)}</td>
+    <td><button class="s p" data-act="openorg" data-v="${i.o.id}" data-tab="${i.tab}">${i.tab === 'Messages' ? 'Reply' : 'Triage'}</button></td></tr>`).join('') || '<tr><td colspan="5">Nothing waiting. Every customer has an answer.</td></tr>'}</table>
+  <div class="form"><button data-act="simemail">Simulate: a customer email arrives</button><span class="note">In the real system, email to help@ and the website form land here as tickets with the clock already running (YouTrack Helpdesk / Jira Service Management channels).</span></div>`;
+}
+
+/* ---------- Build board (kanban: WIP limits, blocked cards, days in column, swimlanes) ---------- */
+const COLS = ['Backlog', 'Building', 'Review', 'Done'];
+function nd(n){ return n === 1 ? '1 day' : n + ' days'; }
+function daysSince(d){ return Math.max(0, Math.round((new Date(TODAY) - new Date(d)) / 864e5)); }
+function cardView(c, showOrg){
+  const i = COLS.indexOf(c.col);
+  return `<div class="kcard" style="${c.blocked ? 'border-color:var(--bad)' : ''}"><b>${esc(c.title)}</b>${showOrg ? `<div class="note">${orgLink(org(c.orgId))}</div>` : ''}
+    <div class="note">${c.gh ? 'GitHub ' + esc(c.gh) + ' · ' : ''}${c.col === 'Done' ? 'took ' + nd(Math.max(1, Math.round((new Date(c.doneAt) - new Date(c.created)) / 864e5))) : nd(daysSince(c.since)) + ' in ' + c.col}</div>
+    ${c.blocked ? `<div class="bad note">Blocked ${daysSince(c.blockedSince) ? nd(daysSince(c.blockedSince)) : 'today'}: ${esc(c.blocked)}</div>` : ''}
+    <div class="form">${i > 0 ? `<button class="s" data-act="cardmove" data-v="${c.id}" data-d="-1">←</button>` : ''}${i < 3 ? `<button class="s" data-act="cardmove" data-v="${c.id}" data-d="1">→</button>` : ''}
+    ${c.col !== 'Done' ? `<button class="s ${c.blocked ? '' : 'x'}" data-act="cardblock" data-v="${c.id}">${c.blocked ? 'Unblock' : 'Blocked'}</button>` : ''}
+    ${c.gh && c.col !== 'Done' ? `<button class="s" data-act="ghmerge" data-v="${c.id}" title="What GitHub does when Kris merges a PR that says fixes ${esc(c.gh)}">Simulate: PR merged "fixes ${esc(c.gh)}"</button>` : ''}</div></div>`;
+}
+function boardView(){
+  const lanes = ui.lanes ? S.orgs.filter(o => S.cards.some(c => c.orgId === o.id)) : [null];
+  const count = col => S.cards.filter(c => c.col === col).length;
+  const head = COLS.map(col => { const lim = S.wip[col], over = lim && count(col) > lim;
+    return `<div class="col" style="min-height:0;${over ? 'border-color:var(--bad)' : ''}"><b>${col}</b> (${count(col)}${lim ? ' of ' + lim : ''})
+      ${col === 'Building' || col === 'Review' ? `<div class="note">Limit <input type="number" min="1" style="width:60px" value="${lim}" data-act="wipset" data-v="${col}"></div>` : ''}
+      ${over ? '<div class="bad note">Over the limit: finish something before starting more.</div>' : ''}</div>`; }).join('');
+  const rows = lanes.map(o => `${o ? `<div style="grid-column:1/-1;margin-top:10px"><b>${orgLink(o)}</b></div>` : ''}${COLS.map(col => `<div class="col" style="min-height:70px">${S.cards.filter(c => c.col === col && (!o || c.orgId === o.id)).map(c => cardView(c, !o)).join('')}</div>`).join('')}`).join('');
+  const done = S.cards.filter(c => c.col === 'Done' && c.doneAt);
+  const avg = done.length ? Math.round(done.reduce((a, c) => a + Math.max(1, (new Date(c.doneAt) - new Date(c.created)) / 864e5), 0) / done.length) : 0;
+  return `<h1>Build board</h1><p class="sub">Kris's work, card by card. Limits keep too much from being started at once; blocked cards show why and for how long. Moving a card to Done (or a merged PR that says "fixes #N") updates the customer's project page.</p>
+  <div class="form"><label><input type="checkbox" data-act="lanes" ${ui.lanes ? 'checked' : ''}> One row per customer</label>
+   <select id="cardorg">${S.orgs.map(o => `<option value="${o.id}">${esc(o.name)}</option>`).join('')}</select><input id="cardtitle" placeholder="New card"><input id="cardgh" placeholder="GitHub #" style="width:90px"><button class="p" data-act="addcard">Add to Backlog</button></div>
+  <div class="kanban" style="grid-template-columns:repeat(4,minmax(200px,1fr));margin-top:12px">${head}${rows}</div>
+  <p class="note">Average time from card to Done: ${avg ? avg + ' days' : 'none done yet'} · Blocked now: ${S.cards.filter(c => c.blocked && c.col !== 'Done').length}</p>`;
+}
+function finishCard(c, why){
+  c.col = 'Done'; c.since = TODAY; c.doneAt = TODAY; c.blocked = '';
+  const o = org(c.orgId);
+  if (c.ms != null && o.project.milestones[c.ms]) { o.project.milestones[c.ms].done = true; o.project.milestones[c.ms].src = 'GitHub ' + (c.gh || '') + ' closed ' + TODAY; }
+  log(`${why}: "${c.title}" done for ${o.name}`);
 }
 
 /* ---------- CR Assistant: agents propose, a person approves ---------- */
@@ -565,6 +661,8 @@ function healthScore(o){
   const a = attention([o]);
   if (a.overdue.length) { s -= 25 * a.overdue.length; why.push(a.overdue.length + ' overdue promise' + (a.overdue.length > 1 ? 's' : '')); }
   if (a.replies.length) { s -= 20; why.push('waiting on our reply'); }
+  const late = slaItems().filter(i => i.o.id === o.id && i.left < 0).length;
+  if (late) { s -= 15; why.push('reply clock ran out'); }
   const old = S.requests.filter(q => q.orgId === o.id && q.status === 'Open' && q.at < day(-7));
   if (old.length) { s -= 10 * old.length; why.push('request open 7+ days'); }
   const lc = lastContact(o), quiet = lc ? Math.round((new Date(TODAY) - new Date(lc)) / 864e5) : 999;
@@ -636,12 +734,14 @@ const RUN = {
 function runAll(){ Object.values(RUN).forEach(f => f()); }
 
 function reportStats(){
-  let waits = [];
+  let waits = [], onTime = 0;
   S.orgs.forEach(o => { const t = S.messages.filter(m => m.orgId === o.id);
-    t.forEach((m, i) => { if ((person(m.from) || {}).kind !== 'customer') return; const r = t.slice(i + 1).find(x => (person(x.from) || {}).kind === 'staff'); if (r) waits.push((new Date(r.at) - new Date(m.at)) / 864e5); }); });
+    t.forEach((m, i) => { if (!isCust(m) || (i > 0 && isCust(t[i - 1]))) return; const r = t.slice(i + 1).find(x => (person(x.from) || {}).kind === 'staff');
+      if (r) { const h = bh(m.at, r.at); waits.push(h); if (h <= replyTarget(o)) onTime++; } }); });
   const due = S.promises.filter(r => r.due < TODAY || r.done), kept = due.filter(r => r.done).length;
+  const avg = waits.length ? waits.reduce((a, b) => a + b, 0) / waits.length : 0;
   return {
-    reply: !waits.length ? 'no replies yet' : (waits.reduce((a, b) => a + b, 0) / waits.length) < 0.5 ? 'same day' : (waits.reduce((a, b) => a + b, 0) / waits.length).toFixed(1) + ' days',
+    reply: !waits.length ? 'no replies yet' : hrs(avg) + ' (business hours) · ' + Math.round(100 * onTime / waits.length) + '% inside the tier target',
     kept: due.length ? Math.round(100 * kept / due.length) + '% (' + kept + ' of ' + due.length + ')' : 'none due yet',
     renewals: S.orgs.filter(o => o.renewal && o.renewal <= day(60)).map(o => o.name + ' (' + ago(o.renewal) + ')'),
     referrals: S.notes.filter(n => /referral/i.test(n.text)).length,
@@ -678,14 +778,14 @@ function approve(id, text){
   const p = S.pending.find(x => x.id === id); if (!p) return;
   const o = p.orgId ? org(p.orgId) : null, by = realMe().id;
   if (p.kind === 'message') {
-    S.messages.push({id:uid('m'), orgId:o.id, from:by, at:TODAY, text});
+    S.messages.push({id:uid('m'), orgId:o.id, from:by, at:stamp(), text});
     if (p.checkin) o.nextCheckin = day(o.cadence);
     if (p.extend) { const r = S.promises.find(x => x.id === p.extend); if (r) r.due = nextWorkday(3); }
   }
   if (p.kind === 'note') S.notes.push({id:uid('n'), orgId:o.id, by, at:TODAY, type:'Call', text, internal:false});
   if (p.kind === 'promise') S.promises.push({id:uid('r'), orgId:o.id, text, due:p.due, owner:p.owner, done:false});
   if (p.kind === 'stage') o.stage = p.stage;
-  if (p.kind === 'request') S.requests.push({id:uid('q'), orgId:o.id, by:p.by, at:TODAY, text, status:'Open'});
+  if (p.kind === 'request') S.requests.push({id:uid('q'), orgId:o.id, by:p.by, at:stamp(), text, status:'Open'});
   if (p.kind === 'issue') { S.issues.push({at:TODAY, orgId:o.id, text}); const q = S.requests.find(x => x.id === p.req); if (q) q.status = 'Sent to Kris'; }
   if (p.kind === 'review') { const w = S.workorders.find(x => x.id === p.wo); if (w) w.status = 'Approved'; }
   if (p.kind === 'report') S.reports.push({at:TODAY, text});
@@ -714,7 +814,7 @@ function agentView(t){
     const items = [];
     const a = attention(S.orgs);
     a.overdue.forEach(r => items.push([1, `Overdue promise: "${r.text}" for ${orgLink(org(r.orgId))}`, 'Send the heads-up waiting above, then do it']));
-    a.replies.forEach(o => items.push([2, `${orgLink(o)} is waiting on a reply`, 'Approve the drafted reply above']));
+    slaItems().forEach(i => items.push([i.left < 0 ? 0 : 2, `${orgLink(i.o)}: ${i.what.toLowerCase()} waiting · ${clock(i)}`, i.tab === 'Messages' ? 'Approve the drafted reply above' : 'Triage it with Kris']));
     S.orgs.filter(o => S.invoices.some(i => i.orgId === o.id && i.status === 'Past due')).forEach(o => items.push([3, `${orgLink(o)} has a past-due invoice`, 'A friendly call, not an email']));
     a.checkins.forEach(o => items.push([4, `Check-in due: ${orgLink(o)}`, 'Send the drafted check-in, or call']));
     a.quiet.forEach(o => items.push([5, `${orgLink(o)} has gone quiet`, 'Call this week']));
@@ -810,7 +910,7 @@ function chatInside(t){
     if (/where|progress|status|project/.test(low) && can('own.project')) { const ms = o.project.milestones; say(ms.length ? ms.map(x => (x.done?'✓ ':'○ ')+x.name).join('\n') : 'Your project has not started yet.'); return; }
     if (/invoice|bill|owe/.test(low)) { say(can('own.invoices') ? S.invoices.filter(i=>i.orgId===o.id).map(i=>`${i.label}: ${money(i.amount)} (${i.status})`).join('\n') || 'No invoices.' : "Invoices aren't part of your portal. Kris can send them to you."); return; }
     if (/add|change|want|could you|can you/.test(low) && can('own.requests')) {
-      ui.pending = () => { S.requests.push({id:uid('q'), orgId:o.id, by:p.id, at:TODAY, text:t, status:'Open'}); log(`Change request from ${o.name}`); save(); say('Sent. Kris will tell you what it involves before any work starts.'); };
+      ui.pending = () => { S.requests.push({id:uid('q'), orgId:o.id, by:p.id, at:stamp(), text:t, status:'Open'}); log(`Change request from ${o.name}`); save(); say('Sent. Kris will tell you what it involves before any work starts.'); };
       say(`Send this to Kris as a change request?\n"${t}"\nType "yes" to send.`); return;
     }
   } else {
@@ -853,10 +953,10 @@ const A = {
   addprom(el){ const t = val('ptext'); if (!t) return; const o = org(el.dataset.v); S.promises.push({id:uid('r'), orgId:o.id, text:t, due:val('pdue')||day(3), owner:val('powner'), done:false}); log(`Promise added for ${o.name}: ${t}`); },
   promdone(el){ const r = S.promises.find(x=>x.id===el.dataset.v); r.done = true; log(`Promise kept for ${org(r.orgId).name}: ${r.text}`); },
   cadence(el){ const o = org(el.dataset.v); o.cadence = Number(el.value); log(`${o.name} check-ins every ${o.cadence} days`); },
-  checkin(el){ const o = org(el.dataset.v); const t = val('cktext'); if (!t) return; S.messages.push({id:uid('m'), orgId:o.id, from:realMe().id, at:TODAY, text:t}); o.nextCheckin = day(o.cadence); log(`Check-in sent to ${o.name}`); },
+  checkin(el){ const o = org(el.dataset.v); const t = val('cktext'); if (!t) return; S.messages.push({id:uid('m'), orgId:o.id, from:realMe().id, at:stamp(), text:t}); o.nextCheckin = day(o.cadence); log(`Check-in sent to ${o.name}`); },
   checkincall(el){ const o = org(el.dataset.v); S.notes.push({id:uid('n'), orgId:o.id, by:realMe().id, at:TODAY, type:'Call', text:'Check-in call.', internal:false}); o.nextCheckin = day(o.cadence); log(`Check-in call with ${o.name}`); },
-  sendmsg(el){ const t = val('mtext'); if (!t) return; const o = org(el.dataset.v); S.messages.push({id:uid('m'), orgId:o.id, from:me().id, at:TODAY, text:t}); log(`Message in ${o.name} thread from ${me().name}`); },
-  addreq(el){ const t = val('rtext'); if (!t) return; const o = org(el.dataset.v); S.requests.push({id:uid('q'), orgId:o.id, by:me().id, at:TODAY, text:t, status:'Open'}); log(`Change request from ${o.name}`); },
+  sendmsg(el){ const t = val('mtext'); if (!t) return; const o = org(el.dataset.v); S.messages.push({id:uid('m'), orgId:o.id, from:me().id, at:stamp(), text:t}); log(`Message in ${o.name} thread from ${me().name}`); },
+  addreq(el){ const t = val('rtext'); if (!t) return; const o = org(el.dataset.v); S.requests.push({id:uid('q'), orgId:o.id, by:me().id, at:stamp(), text:t, status:'Open'}); log(`Change request from ${o.name}`); },
   reqstatus(el){ const q = S.requests.find(x=>x.id===el.dataset.v); q.status = el.dataset.s; log(`Request "${q.text}" ${q.status.toLowerCase()}`); },
   addcontact(el){ const n = val('cname'), e = val('cemail'); if (!n || !e) return; S.people.push({id:uid('p'), name:n, email:e, kind:'customer', orgId:el.dataset.v}); log(`Contact ${n} added to ${org(el.dataset.v).name}`); },
   addorg(){ const n = val('neworg'); if (!n) return; S.orgs.push({id:uid('o'), name:n, stage:'Lead', tierId:'t-c1', owner:realMe().id, cadence:14, nextCheckin:day(7), project:{name:'Not started', milestones:[]}}); log(`Customer added: ${n}`); },
@@ -866,7 +966,7 @@ const A = {
   woapprove(el){ const w = S.workorders.find(x=>x.id===el.dataset.v); w.status = 'Approved'; log(`Approved "${w.title}" from ${nameOf(w.subId)}`); },
   wopaid(el){ const w = S.workorders.find(x=>x.id===el.dataset.v); w.status = 'Paid'; log(`Paid ${nameOf(w.subId)} for "${w.title}"`); },
   handin(el){ const w = S.workorders.find(x=>x.id===el.dataset.v); const f = val('hi-'+w.id); if (!f) return; w.handin = f; w.status = 'Handed in'; log(`${me().name} handed in "${w.title}"`); },
-  submsg(el){ const w = S.workorders.find(x=>x.id===el.dataset.v); const t = val('sm-'+w.id); if (!t) return; S.messages.push({id:uid('m'), orgId:w.orgId, from:me().id, at:TODAY, text:t}); log(`${me().name} messaged ${org(w.orgId).name}`); },
+  submsg(el){ const w = S.workorders.find(x=>x.id===el.dataset.v); const t = val('sm-'+w.id); if (!t) return; S.messages.push({id:uid('m'), orgId:w.orgId, from:me().id, at:stamp(), text:t}); log(`${me().name} messaged ${org(w.orgId).name}`); },
   ptier(el){ const p = person(el.dataset.v); p.tierId = el.value; log(`${p.name} tier set to ${S.tiers.find(t=>t.id===el.value).name}`); },
   delperson(el){ const p = person(el.dataset.v); if (!confirm('Remove ' + p.name + '?')) return; S.people = S.people.filter(x=>x.id!==p.id); log(`Removed ${p.name}`); },
   addperson(){ const n = val('npname'), e = val('npemail'), k = val('npkind'); if (!n || !e) return;
@@ -879,6 +979,23 @@ const A = {
   deltier(el){ const t = S.tiers.find(x=>x.id===el.dataset.v); S.tiers = S.tiers.filter(x=>x.id!==t.id); log(`Deleted tier ${t.name}`); },
   nop(){ alert('In the real system this opens the document.'); },
   nop2(){},
+  treply(el){ const t = S.tiers.find(x => x.id === el.dataset.v); t.replyHours = Math.max(1, Number(el.value) || 24); log(`${t.name}: reply target ${t.replyHours} business hours`); },
+  simemail(){
+    const c = S.people.find(p => p.id === 'p-c2') || S.people.find(p => p.kind === 'customer');
+    S.messages.push({id:uid('m'), orgId:c.orgId, from:c.id, at:stamp(), via:'Email', text:"Hi, can you send me the booking site proposal again? I can't find the email."});
+    log(`Email from ${c.name} became a ticket`);
+  },
+  lanes(){ ui.lanes = !ui.lanes; },
+  wipset(el){ S.wip[el.dataset.v] = Math.max(1, Number(el.value) || 1); log(`${el.dataset.v} limit set to ${S.wip[el.dataset.v]}`); },
+  cardmove(el){ const c = S.cards.find(x => x.id === el.dataset.v); const to = COLS[COLS.indexOf(c.col) + Number(el.dataset.d)];
+    if (to === 'Done') finishCard(c, 'Moved to Done'); else { c.col = to; c.since = TODAY; log(`"${c.title}" moved to ${to}`); } },
+  cardblock(el){ const c = S.cards.find(x => x.id === el.dataset.v);
+    if (c.blocked) { log(`"${c.title}" unblocked`); c.blocked = ''; return; }
+    const why = prompt('What is it waiting on?'); if (!why) return; c.blocked = why; c.blockedSince = TODAY; log(`"${c.title}" blocked: ${why}`); },
+  ghmerge(el){ const c = S.cards.find(x => x.id === el.dataset.v);
+    S.notes.push({id:uid('n'), orgId:c.orgId, by:realMe().id, at:TODAY, type:'Note', text:`GitHub: pull request merged, fixes ${c.gh} (${c.title}).`, internal:true});
+    finishCard(c, `GitHub PR merged (fixes ${c.gh})`); },
+  addcard(){ const t = val('cardtitle'); if (!t) return; S.cards.push({id:uid('c'), orgId:val('cardorg'), title:t, col:'Backlog', created:TODAY, since:TODAY, gh:val('cardgh'), ms:null, blocked:''}); log(`Card added: ${t}`); },
   agtab(el){ ui.agTab = el.dataset.v; ui.noteMsg = ''; },
   runall(){ runAll(); log('Ran all agents'); },
   approve(el){ const ta = document.getElementById('pa-' + el.dataset.v); const p = S.pending.find(x => x.id === el.dataset.v); approve(el.dataset.v, ta ? ta.value.trim() : (p ? p.text : '')); },
