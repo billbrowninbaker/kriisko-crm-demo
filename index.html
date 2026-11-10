@@ -871,8 +871,12 @@ function chatPublic(t){
     if (p) {
       S.inbox.unshift({id:uid('e'), to:p.email, pid:p.id, at:Date.now(), expires:Date.now()+15*60e3, used:false});
       log('Sign-in link emailed to ' + p.email);
+      ui.inboxOpen = true;
     } else log('Sign-in asked for an email not on file');
     say("If that email is on file, a sign-in link is on its way. It works once and expires in 15 minutes.");
+    // The real system stops at the line above. The demo sends no real email, so it says where the link went.
+    say(p ? 'DEMO: no real email is sent. Your link is in the Demo inbox, now open at the bottom left. Click "Sign in to Kriisko".'
+          : 'DEMO: no real email is sent, and the demo only knows sample people. Ask again and use bill@kriisko.test (or kris@kriisko.test, robyn@sub.test, pat@dental.test).');
     return;
   }
   if (/crm|sign ?in|log ?in|portal|customer relations|my account|my project/.test(low)) { ui.chatWait = 'email'; say('Sure. What email do we have on file for you?'); return; }
