@@ -863,13 +863,18 @@ function helpText(){
 }
 function findOrg(s){ s = s.toLowerCase().trim(); return S.orgs.find(o => o.name.toLowerCase().includes(s) || s.includes(o.name.toLowerCase().split(' ')[0])); }
 
-function chatPublic(t){
+// Bill's and Kris's real addresses sign them in as themselves. Stored only as SHA-256 hashes
+// so the addresses never appear in this public page. The demo still sends no email.
+const ALIASES = {'f11797fb56fed4f453292e4c7153298baab9328a204597e2795e7a24ab6adeb8':'p-kris', '99b3d63124967893e0ba58b18b396a433e0392604c3c6b399de6e827af0936e1':'p-bill'};
+async function sha256(s){ const b = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s)); return [...new Uint8Array(b)].map(x => x.toString(16).padStart(2,'0')).join(''); }
+async function chatPublic(t){
   const low = t.toLowerCase();
   if (ui.chatWait === 'email') {
     ui.chatWait = null;
-    const p = S.people.find(x => x.email.toLowerCase() === low.trim());
+    let p = S.people.find(x => x.email.toLowerCase() === low.trim());
+    if (!p) { try { const id = ALIASES[await sha256(low.trim())]; if (id) p = person(id); } catch (e) {} }
     if (p) {
-      S.inbox.unshift({id:uid('e'), to:p.email, pid:p.id, at:Date.now(), expires:Date.now()+15*60e3, used:false});
+      S.inbox.unshift({id:uid('e'), to:low.trim(), pid:p.id, at:Date.now(), expires:Date.now()+15*60e3, used:false});
       log('Sign-in link emailed to ' + p.email);
       ui.inboxOpen = true;
     } else log('Sign-in asked for an email not on file');
@@ -1019,12 +1024,12 @@ document.addEventListener('change', e => {
   const el = e.target; const f = el.dataset && A[el.dataset.act]; if (!f) return;
   f(el); save(); render();
 });
-document.addEventListener('submit', e => {
+document.addEventListener('submit', async e => {
   if (e.target.dataset.act !== 'chatsend') return;
   e.preventDefault();
   const inp = e.target.querySelector('input'); const t = inp.value.trim(); if (!t) return;
   ui.chat.push({t, u:true});
-  if (me()) chatInside(t); else chatPublic(t);
+  if (me()) chatInside(t); else await chatPublic(t);
   save(); render();
 });
 render();
